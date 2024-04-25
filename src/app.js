@@ -49,7 +49,6 @@ function deserializeGraphics(data, app) {
     width: canvasWidth,
     height: canvasWidth,
     backgroundColor: 0xFFFFFF,
-    //antialias: false
   })
 
   app.view.classList.add('border');
