@@ -19,7 +19,6 @@ let colours = ['red', 'green', 'yellow', 'blue', 'black', 'silver', 'gray', 'whi
 
 function handleButtonClick() {
     console.log('Button clicked!');
-    // Add your logic here
 }
 
 </script>
