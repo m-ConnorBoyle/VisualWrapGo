@@ -90,7 +90,7 @@ function handleButtonClick() {
         <div class="flex flex-col">
             <header class="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
                 <h1 class="text-3xl font-untitledSans font-medium ">
-                    VisualWrap
+                    VisualWrap [TEST]
                 </h1>
 
             </header>
