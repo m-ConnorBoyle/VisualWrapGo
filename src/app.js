@@ -1,44 +1,48 @@
+import { coloursStore } from "./stores/colours-store"
+import { pinia } from "./main.js"
+
+//const pinia = createPinia()
+//const cStore = coloursStore(pinia)
+
+//let cStore
+
 document.addEventListener("DOMContentLoaded", () => {
 
   function clearStage() {
     app.stage.removeChildren();
   }
 
-  let mySavedData;
-
-  let zIndexCounter = 0;
-
   function serializeGraphics() {
-    let objects = [];
-    app.stage.children.forEach(child => {
-      let children = []
-      for (let i = 0; i < child.children.length; i++) {
-        children.push({x: child[i].x, y: child[i].y, rotation: child[i].rotation, colour: child[i]._tintColor}) 
-      }
-      objects.push(JSON.stringify(children));
-    });
-    localStorage.setItem("graphicsData", JSON.stringify(objects) )
-    //return JSON.stringify(objects);
-}
+    /* let objects = [];
+     app.stage.children.forEach(child => {
+       let children = []
+       for (let i = 0; i < child.children.length; i++) {
+         children.push({ x: child[i].x, y: child[i].y, rotation: child[i].rotation, colour: child[i]._tintColor })
+       }
+       objects.push(JSON.stringify(children));
+     });
+     localStorage.setItem("graphicsData", JSON.stringify(objects))
+     //return JSON.stringify(objects);*/
+  }
 
-function deserializeGraphics(data, app) {
+  function deserializeGraphics(data, app) {
     let objects = JSON.parse(data);
     objects.forEach(obj => {
-        const graphics = new PIXI.Graphics();
-        graphics.x = obj.x;
-        graphics.y = obj.y;
-        obj.graphicsData.forEach(gd => {
-            graphics.lineStyle(gd.lineWidth, gd.lineColor, gd.lineAlpha);
-            graphics.beginFill(gd.fill, gd.alpha);
-            if (gd.type === 'polygon') {
-                graphics.drawPolygon(gd.points);
-            }
-            // Add other types of shapes here based on `gd.type`
-            graphics.endFill();
-        });
-        app.stage.addChild(graphics);
+      const graphics = new PIXI.Graphics();
+      graphics.x = obj.x;
+      graphics.y = obj.y;
+      obj.graphicsData.forEach(gd => {
+        graphics.lineStyle(gd.lineWidth, gd.lineColor, gd.lineAlpha);
+        graphics.beginFill(gd.fill, gd.alpha);
+        if (gd.type === 'polygon') {
+          graphics.drawPolygon(gd.points);
+        }
+        // Add other types of shapes here based on `gd.type`
+        graphics.endFill();
+      });
+      app.stage.addChild(graphics);
     });
-}
+  }
 
   const canvasContainer = document.getElementById('canvasContainer');
   let canvasWidth = 400;
@@ -114,7 +118,7 @@ function deserializeGraphics(data, app) {
   //let isOdd = true
   let currentColour;
 
-  function generateLineObject(startX, startY, colour, angleInDegrees, thickness) {
+  function generateLineObject(startX, startY, colour1, colour2, angleInDegrees, thickness) {
     let lineContainer = new PIXI.Container();
     lineContainer.interactive = true;
     lineContainer.buttonMode = true;
@@ -128,29 +132,31 @@ function deserializeGraphics(data, app) {
       startY2 = yCoord + canvasWidth;
     }*/
 
-    let graphics1 = createLine(startX, startY, colour, angleInDegrees, thickness);
+    let graphics1 = createLine(startX, startY, colour1, angleInDegrees, thickness);
     lineContainer.addChild(graphics1);
 
-    let graphics5 = createLine(startX2 + myOffset, startY2 + myOffset, colour, angleInDegrees, thickness);
-    lineContainer.addChild(graphics5);
-
-    let graphics6 = createLine(startX - myOffset, startY - myOffset, colour, angleInDegrees, thickness);
-    lineContainer.addChild(graphics6);
-
-    let graphics2 = createLine(startX2, startY2, colour, angleInDegrees, thickness);
+    let graphics2 = createLine(startX2, startY2, colour1, angleInDegrees, thickness);
     lineContainer.addChild(graphics2);
 
-    let graphics3 = createLine(startX2 + myOffset, startY2, colour, 360 - angleInDegrees, thickness);
+    let graphics5 = createLine(startX2 + myOffset, startY2 + myOffset, colour1, angleInDegrees, thickness);
+    //lineContainer.addChild(graphics5);
+
+    let graphics6 = createLine(startX - myOffset, startY - myOffset, colour1, angleInDegrees, thickness);
+    //lineContainer.addChild(graphics6);
+
+
+    //let graphics3 = createLine(startX2 + myOffset, startY2, colour, 360 - angleInDegrees, thickness);
+    let graphics3 = createLine(startX2, startY2, colour1, 360 - angleInDegrees, thickness);
     lineContainer.addChild(graphics3);
 
-    let graphics7 = createLine(startX, startY2 + canvasWidth, colour, 360 - angleInDegrees, thickness);
-    lineContainer.addChild(graphics7);
+    let graphics7 = createLine(startX, startY2 + canvasWidth, colour1, 360 - angleInDegrees, thickness);
+    //lineContainer.addChild(graphics7);
 
-    let graphics4 = createLine(startX2, startY2 + myOffset, colour, 360 - angleInDegrees, thickness);
+    let graphics4 = createLine(startX2 + canvasWidth, startY2, colour1, 360 - angleInDegrees, thickness);
     lineContainer.addChild(graphics4);
 
-    let graphics8 = createLine(startX2, startY2 + myOffset, colour, 360 - angleInDegrees, thickness);
-    lineContainer.addChild(graphics4);
+    /*let graphics8 = createLine(startX2, startY2 + myOffset, colour, 360 - angleInDegrees, thickness);
+    lineContainer.addChild(graphics8);*/
 
     //figure out what to do with more lines here
 
@@ -243,71 +249,90 @@ function deserializeGraphics(data, app) {
     }
   }
 
-  /*function getWordAfterKeyword(sentence, keyword) {
-    const regex = new RegExp(`\\b${keyword}\\b\\s+(\\w+)`, 'i');
-    const matches = sentence.match(regex);
-    return matches ? matches[1] : null;
-  }*/
-
-  function getWordAfterKeyword(sentence, keyword) {
+  function getNumberAfterKeyword(sentence, keyword) {
     const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regex = new RegExp(`${escapedKeyword}\\s+(\\S+)`, 'i');
     const matches = sentence.match(regex);
-    return matches ? matches[1] : null;
+    return Number(matches ? matches[1] : null)
   }
 
-  function getSecondWordAfterKeyword(sentence, keyword) {
-    const regex = new RegExp(`\\b${keyword}\\b\\s+\\w+\\s+(\\w+)`, 'i');
-    const matches = sentence.match(regex);
-    return matches ? matches[1] : null;
+  function getWordAfterKeyword(sentence, keyword) {
+    const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+    const regex = new RegExp(`${escapedKeyword}[^\\s]*\\s+(\\S+)`, 'i')
+    const matches = sentence.match(regex)
+    return matches ? matches[1] : null
   }
 
-  function parseThreadDown2(str) {
-    if (str === 'dsrl') {
-      deserializeGraphics()
+  function findFirstWordAfterFourthNumber(sentence) {
+    // Regex pattern to find the first word after the fourth number
+    const pattern = /(?:\d+\D+){3}\d+[^a-zA-Z\d]*(\w+)/;
+    const match = sentence.match(pattern);
+    return match ? match[1] : null; // Return the word if found, otherwise return null
+}
+
+  function parseCross(str) {
+    let xCoord = getNumberAfterKeyword(str, 'x') * 1
+    let yCoord = getNumberAfterKeyword(str, 'y') * 1
+    let color1 = getWordAfterKeyword(str, 'Spool')
+    let band = getNumberAfterKeyword(str, 'Band') * 1
+    let minus = getNumberAfterKeyword(str, 'minus') * 1
+    let plus = getNumberAfterKeyword(str, 'plus') * 1
+    let progressionType = "";
+    if (minus != 0) {
+      progressionType = "minus"
+    } else if (plus != 0) {
+      progressionType = "plus"
+    } else if (band != 0) {
+      progressionType = 'band'
     }
-    let xCoord = getWordAfterKeyword(str, 'x') * 1;
-    let yCoord = getWordAfterKeyword(str, 'y') * 1;
-    let color = getWordAfterKeyword(str, 'Spool_Up');
-    let band = getWordAfterKeyword(str, 'Band') * 1;
+
+
     if (band != '') {
       band = true;
     } else {
       band = false;
     }
-    let direction = getSecondWordAfterKeyword(str, 'Spool_Up');
-    let init = getWordAfterKeyword(str, 'init#');
-    let passes = getWordAfterKeyword(str, 'passes');
-    let gradient = getWordAfterKeyword(str, '%') * 1;
-    console.log("x: " + xCoord, "y: " + yCoord, "color: " + color, "band: " + band, "direction: " + direction, "init: " + init, "passes: " + passes, "gradient: " + gradient);
+    let direction = findFirstWordAfterFourthNumber(str);
+    let init = getNumberAfterKeyword(str, 'init#');
+    let passes = getNumberAfterKeyword(str, 'passes');
+    let gradient = getNumberAfterKeyword(str, '%') * 1;
+    console.log("x: " + xCoord, "y: " + yCoord, "color: " + color1, "progressionType: " + progressionType, "direction: " + direction, "init: " + init, "passes: " + passes, "gradient: " + gradient);
     let currentWidth = init;
+    console.log("direction:" + direction)
+    let first_flag = false
     for (let i = 0; i < passes; i++) {
-      // generateLineObject(xCoord, yCoord, color, 45, currentWidth);
-      generateLineObject(xCoord, yCoord, '0xff0000', -45, currentWidth);
 
+      // generateLineObject(xCoord, yCoord, color, 45, currentWidth);
+      console.log(cStore[Number(color1)])
+      generateLineObject(xCoord, yCoord, cStore[Number(color1)], -45, currentWidth);
       //generateLineObject(xCoord, yCoord, '0xff0000', 45, currentWidth);
       if (direction === 'Left') {
+        yCoord = yCoord - currentWidth;
+      } else if (direction === 'Up') {
+        xCoord = xCoord + currentWidth;
+      } else if (direction === 'Down') {
         xCoord = xCoord - currentWidth;
       } else if (direction === 'Right') {
-        xCoord = xCoord + currentWidth;
-      } else if (direction === 'Up') {
-        yCoord = yCoord - currentWidth;
-      } else if (direction === 'Down') {
-        yCoord = yCoord + currentWidth;
+        if (!first_flag) {
+          yCoord = yCoord + currentWidth;
+          first_flag = true
+        } else {
+          yCoord = yCoord + currentWidth;
+        }
       }
       currentWidth = currentWidth
     }
 
     //generateLineObject(xCoord, yCoord, '0xff0000', 45, band);
     app.renderer.render(app.stage);
-    mySavedData = serializeGraphics()
+    //mySavedData = serializeGraphics()
   }
 
   function addRunEventListener() {
     document.getElementById('menuRun').addEventListener('click', () => {
       clearStage();
       let code = document.getElementById('code-editor').value;
-      parseThreadDown2(code)
+      parseCross(code)
 
       /*let lines = code.split('\n');
       lines.forEach(line => {
