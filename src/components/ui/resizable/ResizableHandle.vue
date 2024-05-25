@@ -24,3 +24,9 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     </template>
   </SplitterResizeHandle>
 </template>
+
+<style scoped>
+.SplitterResizeHandle::after:hover {
+    background-color: 'red'; /* Change #yourColor to whatever color you want */
+}
+</style>
