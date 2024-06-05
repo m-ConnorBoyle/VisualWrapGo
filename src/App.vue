@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { PlusCircleIcon, LifeBuoy, Settings2, SquareTerminal, SquareUser, Triangle, } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
@@ -10,9 +9,12 @@ import { TooltipProvider } from 'radix-vue'
 import { coloursStore } from '/src/stores/colours-store'
 import { onMounted, onUnmounted, ref, nextTick, watchEffect } from 'vue'
 import { Slider } from '@/components/ui/slider'
+import { objectStore } from './stores/objects-store'
+import { DateField } from 'radix-vue/namespaced'
+import Line from './classes/Line'
 
 const cStore = coloursStore()
-
+const oStore = objectStore()
 const sliderValue = ref([50])
 const sliderMaxValue = ref(0)
 
@@ -22,7 +24,6 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from '@/components/ui/resizable'
-import { DateField } from 'radix-vue/namespaced'
 
 let colours = cStore.colours
 
@@ -119,43 +120,27 @@ onMounted(() => {
         let myOffset = canvasWidth / 2;
         let startX2 = startX + myOffset;
         let startY2 = startY + myOffset;
-        /*if (startX2 < 0) {
-          startX2 = xCoord + canvasWidth;
-        } 
-        if (startY2 < 0) {
-          startY2 = yCoord + canvasWidth;
-        }*/
 
-        let graphics1 = createLine(startX, startY, colour1, angleInDegrees, thickness);
+        let graphics1 = new Line(startX, startY, colour1, angleInDegrees, thickness, canvasWidth).createLine()
         lineContainer.addChild(graphics1);
 
-        let graphics2 = createLine(startX2, startY2, colour1, angleInDegrees, thickness);
+        let graphics2 = new Line(startX2, startY2, colour1, angleInDegrees, thickness, canvasWidth).createLine()
         lineContainer.addChild(graphics2);
 
-        let graphics6 = createLine(startX - canvasWidth, startY - canvasWidth, colour1, angleInDegrees, thickness);
+        let graphics3 = new Line(startX2, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()   
+        lineContainer.addChild(graphics3);
+       
+        let graphics4 = new Line(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine() 
+        lineContainer.addChild(graphics4);
+        
+        let graphics5 = new Line(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour1, angleInDegrees, thickness, canvasWidth).createLine()  
+        lineContainer.addChild(graphics5);
+        
+        let graphics6 = new Line(startX - canvasWidth, startY - canvasWidth, colour1, angleInDegrees, thickness, canvasWidth).createLine()
         lineContainer.addChild(graphics6);
 
-        let graphics5 = createLine(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour1, angleInDegrees, thickness);
-        lineContainer.addChild(graphics5);
-
-        //let graphics3 = createLine(startX2 + myOffset, startY2, colour, 360 - angleInDegrees, thickness);
-        let graphics3 = createLine(startX2, startY2, colour2, 360 - angleInDegrees, thickness);
-        lineContainer.addChild(graphics3);
-
-        let graphics7 = createLine(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness);
+        let graphics7 = new Line(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()     
         lineContainer.addChild(graphics7);
-
-        let graphics4 = createLine(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness);
-        lineContainer.addChild(graphics4);
-
-        /*let graphics8 = createLine(startX2, startY2 + myOffset, colour, 360 - angleInDegrees, thickness);
-        lineContainer.addChild(graphics8);*/
-
-        //figure out what to do with more lines here
-
-
-        // drawDottedLine(hoverLine5, { x: mouseX + myOffset, y: mouseY + myOffset }, -Math.PI / 4, 800, 0x000000, 2, [3, 3])
-        // drawDottedLine(hoverLine6, { x: mouseX - myOffset, y: mouseY + myOffset }, Math.PI / 4, 800, 0x000000, 2, [3, 3])
 
 
         lineContainer.on('pointerover', (e) => {
@@ -218,26 +203,10 @@ onMounted(() => {
         lineContainer.on('pointerup', endDrag);
         lineContainer.on('pointerupoutside', endDrag);
 
+
         app.stage.addChild(lineContainer);
 
-        //    app.stage.addChild(lineContainer);
-    }
-
-    function createLine(startX, startY, colour, angleInDegrees, thickness) {
-        let graphics = new PIXI.Graphics();
-        graphics.beginFill(colour);
-        graphics.drawRect(0, 0, canvasWidth * 6, thickness);
-        graphics.endFill();
-
-        let angleInRadians = angleInDegrees * (Math.PI / 180);
-        graphics.pivot.x = canvasWidth * 3;
-        //graphics.pivot.y = 0.5;
-        graphics.rotation = angleInRadians;
-        graphics.x = startX;
-        graphics.y = startY;
-        graphics.colour = colour
-
-        return graphics;
+        oStore.addObject(lineContainer)
     }
 
     function getNumberAfterKeyword(sentence, keyword) {
@@ -261,151 +230,83 @@ onMounted(() => {
         return match ? match[1] : null; // Return the word if found, otherwise return null
     }
 
-    /*function parseCross(str) {
-        let xCoord = getNumberAfterKeyword(str, 'x') * 1
-        let yCoord = getNumberAfterKeyword(str, 'y') * 1
-        let color1 = getWordAfterKeyword(str, 'Spool')
-        let color2 = getWordAfterKeyword(str, 'Spool_Dn')
-        let band = getNumberAfterKeyword(str, 'Band') * 1
-        let minus = getNumberAfterKeyword(str, 'minus') * 1
-        let plus = getNumberAfterKeyword(str, 'plus') * 1
+    function parseCross(str, nthIteration) {
+        let xCoord = getNumberAfterKeyword(str, 'x') * 1;
+        let yCoord = getNumberAfterKeyword(str, 'y') * 1;
+        let color1 = getWordAfterKeyword(str, 'Spool');
+        let color2 = getWordAfterKeyword(str, 'Spool_Dn');
+        let band = getNumberAfterKeyword(str, 'Band') * 1;
+        let minus = getNumberAfterKeyword(str, 'minus') * 1;
+        let plus = getNumberAfterKeyword(str, 'plus') * 1;
         let progressionType = "";
         if (minus != 0) {
-            progressionType = "minus"
+            progressionType = "minus";
         } else if (plus != 0) {
-            progressionType = "plus"
+            progressionType = "plus";
         } else if (band != 0) {
-            progressionType = 'band'
+            progressionType = 'band';
         }
         let direction = findFirstWordAfterFourthNumber(str);
         let init = getNumberAfterKeyword(str, 'init#');
         let passes = getNumberAfterKeyword(str, 'passes');
         let gradient = getNumberAfterKeyword(str, '%') * 1;
-        console.log("x: " + xCoord, "y: " + yCoord, "color: " + color1, "color2:" + color2, "progressionType: " + progressionType, "direction: " + direction, "init: " + init, "passes: " + passes, "gradient: " + gradient);
+
         let currentWidth = init;
-        console.log("direction:" + direction)
-        let first_flag = false
-        let current_line_width = init
-        sliderMaxValue.value = 0;
+        let first_flag = false;
+        let current_line_width = init;
+
+        // Iterate until the nth iteration and render only that line object
         for (let i = 0; i < passes; i++) {
-            sliderMaxValue.value ++
-            let current_line_width2 = current_line_width
-            if (band === 0 && first_flag) {
-                if (progressionType === "plus") {
-                    current_line_width = init + plus * i
-                } else if (progressionType === 'minus') {
-                    current_line_width = init + minus * i
+            //if (i === nthIteration) {
+                let current_line_width2 = current_line_width;
+                if (band === 0 && first_flag) {
+                    if (progressionType === "plus") {
+                        current_line_width = init + plus * i;
+                    } else if (progressionType === 'minus') {
+                        current_line_width = init + minus * i;
+                    }
                 }
-            }
-            console.log(colours[Number(color1)])
-            generateLineObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width);
-            if (direction === 'Left') {
-                //yCoord = yCoord - currentWidth * Math.SQRT2;
-                debugger
-                yCoord = yCoord - current_line_width * Math.SQRT2
-            } else if (direction === 'Up') {
-                xCoord = xCoord + current_line_width * Math.SQRT2 
-            } else if (direction === 'Down') {
-                xCoord = yCoord - current_line_width * Math.SQRT2
-                //yCoord = yCoord - init - current_line_width  / 2
-            } else if (direction === 'Right') {
-                if (!first_flag) {
-                    yCoord = yCoord + current_line_width * Math.SQRT2
-                    first_flag = true
-                } else {
-                    yCoord = yCoord + current_line_width * Math.SQRT2
+                generateLineObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width);
+                if (direction === 'Left') {
+                    yCoord = yCoord - current_line_width * Math.SQRT2;
+                } else if (direction === 'Up') {
+                    xCoord = xCoord + current_line_width * Math.SQRT2;
+                } else if (direction === 'Down') {
+                    xCoord = yCoord - current_line_width * Math.SQRT2;
+                } else if (direction === 'Right') {
+                    if (!first_flag) {
+                        yCoord = yCoord + current_line_width * Math.SQRT2;
+                        first_flag = true;
+                    } else {
+                        yCoord = yCoord + current_line_width * Math.SQRT2;
+                    }
                 }
-            }
-            currentWidth = currentWidth
-            first_flag = true
+                currentWidth = currentWidth;
+                first_flag = true;
+            //}
         }
 
         app.renderer.render(app.stage);
-
-    }*/
-
-    function parseCross(str, nthIteration) {
-    let xCoord = getNumberAfterKeyword(str, 'x') * 1;
-    let yCoord = getNumberAfterKeyword(str, 'y') * 1;
-    let color1 = getWordAfterKeyword(str, 'Spool');
-    let color2 = getWordAfterKeyword(str, 'Spool_Dn');
-    let band = getNumberAfterKeyword(str, 'Band') * 1;
-    let minus = getNumberAfterKeyword(str, 'minus') * 1;
-    let plus = getNumberAfterKeyword(str, 'plus') * 1;
-    let progressionType = "";
-    if (minus != 0) {
-        progressionType = "minus";
-    } else if (plus != 0) {
-        progressionType = "plus";
-    } else if (band != 0) {
-        progressionType = 'band';
     }
-    let direction = findFirstWordAfterFourthNumber(str);
-    let init = getNumberAfterKeyword(str, 'init#');
-    let passes = getNumberAfterKeyword(str, 'passes');
-    let gradient = getNumberAfterKeyword(str, '%') * 1;
-
-    let currentWidth = init;
-    let first_flag = false;
-    let current_line_width = init;
-
-    // Iterate until the nth iteration and render only that line object
-    for (let i = 0; i <= nthIteration; i++) {
-        if (i === nthIteration) {
-            let current_line_width2 = current_line_width;
-            if (band === 0 && first_flag) {
-                if (progressionType === "plus") {
-                    current_line_width = init + plus * i;
-                } else if (progressionType === 'minus') {
-                    current_line_width = init + minus * i;
-                }
-            }
-            generateLineObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width);
-            if (direction === 'Left') {
-                yCoord = yCoord - current_line_width * Math.SQRT2;
-            } else if (direction === 'Up') {
-                xCoord = xCoord + current_line_width * Math.SQRT2;
-            } else if (direction === 'Down') {
-                xCoord = yCoord - current_line_width * Math.SQRT2;
-            } else if (direction === 'Right') {
-                if (!first_flag) {
-                    yCoord = yCoord + current_line_width * Math.SQRT2;
-                    first_flag = true;
-                } else {
-                    yCoord = yCoord + current_line_width * Math.SQRT2;
-                }
-            }
-            currentWidth = currentWidth;
-            first_flag = true;
-        }
-    }
-
-    app.renderer.render(app.stage);
-}
 
     function addRunEventListener() {
         document.getElementById('menuRun').addEventListener('click', () => {
             clearStage();
             let code = document.getElementById('code-editor').value;
-            let lines = code.split('\n') 
+            let lines = code.split('\n')
 
             lines.forEach((line, iterator) => {
                 parseCross(line)
             })
-            
-            /*let lines = code.split('\n');
-            lines.forEach(line => {
-              parseThreadDown2(line);
-            })*/
+
         });
     }
     addRunEventListener();
-    //generateLineObject(200, 200, 0xff0000, 45);
 
     app.renderer.render(app.stage);
 
 
-}) 
+})
 
 
 
@@ -499,12 +400,13 @@ onMounted(() => {
                             </form>
                         </div>
                     </ResizablePanel>
-                        <ResizableHandle id="resizable-handle1" @mouseenter="console.log('asdf')" ref="resizeHandle" class="w-1 hover-delay" with-handle />
+                    <ResizableHandle id="resizable-handle1" @mouseenter="console.log('asdf')" ref="resizeHandle"
+                        class="w-1 hover-delay" with-handle />
                     <ResizablePanel>
                         <div
                             class="relative flex h-full min-h-[50vh] flex-col border border-l-0 bg-muted/50 p-4 lg:col-span-2">
                             <div class="flex gap-1 mb-4">
-                                  <Slider :default-value="[0]" :max="sliderMaxValue" :step="1" />
+                                <Slider :default-value="[0]" :max="sliderMaxValue" :step="1" />
                                 <div v-for="c in colours">
                                     <div :class="`bg-${c} w-8 h-8 hover:border-2`"
                                         :style="{ 'background-color': c + '!important' }"></div>
@@ -524,8 +426,8 @@ onMounted(() => {
                                 </TooltipProvider>
                             </div>
                             <div id="canvasContainer" class="canvas-container"></div>
-                                <div id="y-coordinate">asdf</div>
-                                <div id="x-coordinate">asdf</div>
+                            <div id="y-coordinate">asdf</div>
+                            <div id="x-coordinate">asdf</div>
                             <Badge variant="outline" class="absolute font-untitledSans font-light right-2 top-2">
                                 Output
                             </Badge>
