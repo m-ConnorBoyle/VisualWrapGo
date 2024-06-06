@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { TooltipProvider } from 'radix-vue'
 import { coloursStore } from '/src/stores/colours-store'
-import { onMounted, onUnmounted, ref, nextTick, watchEffect, computed } from 'vue'
+import { onMounted, onUnmounted, ref, toRaw, computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import { objectStore } from './stores/objects-store'
 import { DateField } from 'radix-vue/namespaced'
@@ -38,17 +38,17 @@ const app = new PIXI.Application({
 function handleSliderChange(newValue) {
     clearStage();
     for (let i = 0; i < newValue; i++) {
-        app.stage.addChild(oStore.objects[i]);
+        app.stage.addChild(toRaw(oStore.objects[i]).createLineObject())
     }
-    app.renderer.render(app.stage);
+    app.renderer.render(app.stage)
 }
 
 function clearStage() {
-    app.stage.removeChildren();
+    app.stage.removeChildren()
 }
 
 function handleButtonClick() {
-    console.log('Button clicked!');
+    console.log('Button clicked!')
 }
 
 onMounted(() => {
@@ -117,25 +117,10 @@ onMounted(() => {
         }
     }
 
-    let currentColour
-
     function generateLineObject(startX, startY, colour1, colour2, angleInDegrees, thickness) {
         let myOffset = canvasWidth / 2;
         let startX2 = startX + myOffset;
         let startY2 = startY + myOffset;
-        /*let lineContainer = new PIXI.Container();
-        let subContainer1 = new PIXI.Container();
-        let subContainer2 = new PIXI.Container();
-
-        lineContainer.colour1 = colour1
-        lineContainer.colour2 = colour2
-        lineContainer.interactive = true;
-        subContainer2.interactive = true;
-        lineContainer.buttonMode = true;
-        subContainer2.buttonMode = true;
-        let myOffset = canvasWidth / 2;
-        let startX2 = startX + myOffset;
-        let startY2 = startY + myOffset;*/
 
         let line_1 = new LineContainer(canvasWidth, app)
         line_1.addLine(new Line(startX, startY, colour1, angleInDegrees, thickness, canvasWidth).createLine())
@@ -147,165 +132,22 @@ onMounted(() => {
         line_2.addLine(new Line(startX2, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
         line_2.addLine(new Line(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
         line_2.addLine(new Line(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
-        //let graphics1 = new Line(startX, startY, colour1, angleInDegrees, thickness, canvasWidth).createLine()
-        //subContainer1.addChild(graphics1);
-
-        //let graphics2 = new Line(startX2, startY2, colour1, angleInDegrees, thickness, canvasWidth).createLine()
-        //subContainer1.addChild(graphics2);
-
-        let graphics3 = new Line(startX2, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()
-        //subContainer2.addChild(graphics3);
-
-        let graphics4 = new Line(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()
-        //subContainer2.addChild(graphics4);
-
-//        let graphics5 = new Line(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour1, angleInDegrees, thickness, canvasWidth).createLine()
-        //subContainer1.addChild(graphics5);
-
-//        let graphics6 = new Line(startX - canvasWidth, startY - canvasWidth, colour1, angleInDegrees, thickness, canvasWidth).createLine()
-        //subContainer1.addChild(graphics6);
-
-        let graphics7 = new Line(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()
-        //subContainer2.addChild(graphics7);
-
-        /*function onPointerOver(container) {
-            container.on('pointerover', (e) => {
-                if (!dragging) {
-                    const localPosition = e.data.getLocalPosition(app.stage);
-                    // Use localPosition.x and localPosition.y as needed
-                    //console.log('Mouse position on lineContainer:', localPosition.x, localPosition.y);
-                    container.children.forEach(child => {
-                        if (localPosition.x > 0 && localPosition.x < canvasWidth && localPosition.y > 0 && localPosition.y < canvasWidth) {
-                            child.alpha = 0.5
-                            //console.log('inside the app.view')
-                            child.originalColour = child.tint
-                            currentColour = child.colour
-                            //child.tint = 0x008000;
-                        }
-                    });
-                }
-            });
-        }*/
-
-        /*function onPointerOut(container) {
-            container.on('pointerout', () => {
-                container.children.forEach(child => {
-                    //child.tint = child.originalColour
-                    child.alpha = 1
-                    /*if (child.tint === 0x008000) {
-                        child.tint = currentColour
-                    }
-                });
-            });
-        }*/
-
-        //onPointerOver(subContainer1);
-        //onPointerOver(subContainer2);
-        //onPointerOut(subContainer2);
-
-        /*lineContainer.on('pointerover', (e) => {
-            if (!dragging) {
-                const localPosition = e.data.getLocalPosition(app.stage);
-                // Use localPosition.x and localPosition.y as needed
-                //console.log('Mouse position on lineContainer:', localPosition.x, localPosition.y);
-                lineContainer.children.forEach(child => {
-                    if (localPosition.x > 0 && localPosition.x < canvasWidth && localPosition.y > 0 && localPosition.y < canvasWidth) {
-                        child.alpha = 0.5
-                        //console.log('inside the app.view')
-                        child.originalColour = child.tint
-                        currentColour = child.colour
-                        //child.tint = 0x008000;
-                    }
-                });
-            }
-        });*/
-
-        /*lineContainer.on('pointerout', () => {
-            lineContainer.children.forEach(child => {
-                //child.tint = child.originalColour
-                child.alpha = 1
-                /*if (child.tint === 0x008000) {
-                    child.tint = currentColour
-                }
-            });
-        });*/
-
-        //Dragging
-        //let dragging = false;
-
-        /*subContainer2.on('pointerdown', (event) => {
-            subContainer2.alpha = 0.5; // Visual cue for dragging
-            dragging = true;
-            subContainer2.draggingData = event.data;
-            subContainer2.startPosition = subContainer2.toGlobal(event.data.getLocalPosition(subContainer2));
-
-            // Start global move listener
-            app.view.addEventListener('pointermove', (event) => onDragMove(event, subContainer2));
-        });*/
 
 
-        /*lineContainer.on('pointerdown', (event) => {
-            lineContainer.alpha = 0.5; // Visual cue for dragging
-            dragging = true;
-            lineContainer.draggingData = event.data;
-            lineContainer.startPosition = lineContainer.toGlobal(event.data.getLocalPosition(lineContainer));
+        let line_1Object = line_1.createLineObject()
+        let line_2Object = line_2.createLineObject()
 
-            // Start global move listener
-            app.view.addEventListener('pointermove', onDragMove);
-        });*/
-
-        /*function onDragMove(event, container) {
-            if (dragging) {
-                const newPosition = container.draggingData.getLocalPosition(app.stage);
-                container.x += (newPosition.x - container.startPosition.x);
-                container.y += (newPosition.y - container.startPosition.y);
-                container.startPosition = newPosition;
-            }
-        }*/
-
-        /*function onDragMove(event) {
-            if (dragging) {
-                const newPosition = lineContainer.draggingData.getLocalPosition(app.stage);
-                lineContainer.x += (newPosition.x - lineContainer.startPosition.x);
-                lineContainer.y += (newPosition.y - lineContainer.startPosition.y);
-                lineContainer.startPosition = newPosition;
-            }
-        }*/
-
-        /*function endDrag(event, container) {
-            dragging = false;
-            container.alpha = 1;
-            // Stop global move listener
-            app.view.removeEventListener('pointermove', onDragMove(undefined, subContainer2));
-            container.data = null;
-        }*/
-
-        //lineContainer.on('pointerup', endDrag);
-        //subContainer2.on('pointerup', (event) => endDrag(event, subContainer2));
-        //subContainer2.on('pointerupoutside', (event) => endDrag(event, subContainer2));
-        //lineContainer.on('pointerupoutside', endDrag);
-
-        //lineContainer.addChild(subContainer1);
-        
-
-        //KEEP THIS 
-        /*oStore.$patch((state) => {
-            state.objects.push(subContainer1)
+        oStore.$patch((state) => {
+            //state.objects.push(line_1Object)
+            state.objects.push(line_1)
         })
         oStore.$patch((state) => {
-            state.objects.push(subContainer2)
-        })*/
-        //END KEEP THIS
+            //state.objects.push(line_2Object)
+            state.objects.push(line_2)
+        })
 
-
-        //app.stage.addChild(lineContainer);
-        //app.stage.addChild(subContainer1);
-        app.stage.addChild(line_1.createLineObject());
-        app.stage.addChild(line_2.createLineObject());
-        //app.stage.addChild(subContainer2);
-        //oStore.addObject(lineContainer)
-
-        //console.log(oStore.objects)
+        app.stage.addChild(line_1Object);
+        app.stage.addChild(line_2Object);
     }
 
     function getNumberAfterKeyword(sentence, keyword) {
