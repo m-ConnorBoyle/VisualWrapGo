@@ -5,7 +5,6 @@ class Line {
         this._colour = colour;
         this._angleInDegrees = angleInDegrees;
         this._thickness = thickness;
-        this._lineContainer = new PIXI.Container();
         this._dragging = false;
         this._currentColour = 'red';
         this._canvasWidth = canvasWidth;
@@ -67,6 +66,7 @@ class Line {
         graphics.colour = this._colour
         return graphics
     }
+
 }
 
 export default Line;

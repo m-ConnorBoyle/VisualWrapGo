@@ -7,18 +7,19 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { TooltipProvider } from 'radix-vue'
 import { coloursStore } from '/src/stores/colours-store'
-import { onMounted, onUnmounted, ref, nextTick, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick, watchEffect, computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import { objectStore } from './stores/objects-store'
 import { DateField } from 'radix-vue/namespaced'
 import Line from './classes/Line'
+import LineContainer from './classes/LineContainer'
 
 const cStore = coloursStore()
 const oStore = objectStore()
-const sliderValue = ref([50])
-const sliderMaxValue = ref(0)
+const sliderValue = ref([0])
+//const sliderMaxValue = ref(oStore.objects.length)
+const sliderMaxValue = computed(() => oStore.objects.length)
 
-//import "/src/app.js"
 import {
     ResizableHandle,
     ResizablePanel,
@@ -27,25 +28,34 @@ import {
 
 let colours = cStore.colours
 
+let canvasWidth = 400;
+const app = new PIXI.Application({
+    width: canvasWidth,
+    height: canvasWidth,
+    backgroundColor: 0xFFFFFF,
+})
+
+function handleSliderChange(newValue) {
+    clearStage();
+    for (let i = 0; i < newValue; i++) {
+        app.stage.addChild(oStore.objects[i]);
+    }
+    app.renderer.render(app.stage);
+}
+
+function clearStage() {
+    app.stage.removeChildren();
+}
+
 function handleButtonClick() {
     console.log('Button clicked!');
 }
 
 onMounted(() => {
-    function clearStage() {
-        app.stage.removeChildren();
-    }
-
     const canvasContainer = document.getElementById('canvasContainer');
-    let canvasWidth = 400;
     let globalZIndex = 0;
     let linesArr = []
 
-    const app = new PIXI.Application({
-        width: canvasWidth,
-        height: canvasWidth,
-        backgroundColor: 0xFFFFFF,
-    })
 
     app.view.classList.add('border');
     canvasContainer.appendChild(app.view);
@@ -107,73 +117,134 @@ onMounted(() => {
         }
     }
 
-    //let isOdd = true
     let currentColour
-    let currentCrossColour
 
     function generateLineObject(startX, startY, colour1, colour2, angleInDegrees, thickness) {
-        let lineContainer = new PIXI.Container();
-        lineContainer.colour1 = colour1
-        lineContainer.colour2 = colour2
-        lineContainer.interactive = true;
-        lineContainer.buttonMode = true;
         let myOffset = canvasWidth / 2;
         let startX2 = startX + myOffset;
         let startY2 = startY + myOffset;
+        /*let lineContainer = new PIXI.Container();
+        let subContainer1 = new PIXI.Container();
+        let subContainer2 = new PIXI.Container();
 
-        let graphics1 = new Line(startX, startY, colour1, angleInDegrees, thickness, canvasWidth).createLine()
-        lineContainer.addChild(graphics1);
+        lineContainer.colour1 = colour1
+        lineContainer.colour2 = colour2
+        lineContainer.interactive = true;
+        subContainer2.interactive = true;
+        lineContainer.buttonMode = true;
+        subContainer2.buttonMode = true;
+        let myOffset = canvasWidth / 2;
+        let startX2 = startX + myOffset;
+        let startY2 = startY + myOffset;*/
 
-        let graphics2 = new Line(startX2, startY2, colour1, angleInDegrees, thickness, canvasWidth).createLine()
-        lineContainer.addChild(graphics2);
+        let line_1 = new LineContainer(canvasWidth, app)
+        line_1.addLine(new Line(startX, startY, colour1, angleInDegrees, thickness, canvasWidth).createLine())
+        line_1.addLine(new Line(startX2, startY2, colour1, angleInDegrees, thickness, canvasWidth).createLine()) 
+        line_1.addLine(new Line(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour1, angleInDegrees, thickness, canvasWidth).createLine())
+        line_1.addLine(new Line(startX - canvasWidth, startY - canvasWidth, colour1, angleInDegrees, thickness, canvasWidth).createLine())
 
-        let graphics3 = new Line(startX2, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()   
-        lineContainer.addChild(graphics3);
-       
-        let graphics4 = new Line(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine() 
-        lineContainer.addChild(graphics4);
-        
-        let graphics5 = new Line(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour1, angleInDegrees, thickness, canvasWidth).createLine()  
-        lineContainer.addChild(graphics5);
-        
-        let graphics6 = new Line(startX - canvasWidth, startY - canvasWidth, colour1, angleInDegrees, thickness, canvasWidth).createLine()
-        lineContainer.addChild(graphics6);
+        let line_2 = new LineContainer(canvasWidth, app)
+        line_2.addLine(new Line(startX2, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
+        line_2.addLine(new Line(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
+        line_2.addLine(new Line(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
+        //let graphics1 = new Line(startX, startY, colour1, angleInDegrees, thickness, canvasWidth).createLine()
+        //subContainer1.addChild(graphics1);
 
-        let graphics7 = new Line(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()     
-        lineContainer.addChild(graphics7);
+        //let graphics2 = new Line(startX2, startY2, colour1, angleInDegrees, thickness, canvasWidth).createLine()
+        //subContainer1.addChild(graphics2);
 
+        let graphics3 = new Line(startX2, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()
+        //subContainer2.addChild(graphics3);
 
-        lineContainer.on('pointerover', (e) => {
+        let graphics4 = new Line(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()
+        //subContainer2.addChild(graphics4);
+
+//        let graphics5 = new Line(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour1, angleInDegrees, thickness, canvasWidth).createLine()
+        //subContainer1.addChild(graphics5);
+
+//        let graphics6 = new Line(startX - canvasWidth, startY - canvasWidth, colour1, angleInDegrees, thickness, canvasWidth).createLine()
+        //subContainer1.addChild(graphics6);
+
+        let graphics7 = new Line(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine()
+        //subContainer2.addChild(graphics7);
+
+        /*function onPointerOver(container) {
+            container.on('pointerover', (e) => {
+                if (!dragging) {
+                    const localPosition = e.data.getLocalPosition(app.stage);
+                    // Use localPosition.x and localPosition.y as needed
+                    //console.log('Mouse position on lineContainer:', localPosition.x, localPosition.y);
+                    container.children.forEach(child => {
+                        if (localPosition.x > 0 && localPosition.x < canvasWidth && localPosition.y > 0 && localPosition.y < canvasWidth) {
+                            child.alpha = 0.5
+                            //console.log('inside the app.view')
+                            child.originalColour = child.tint
+                            currentColour = child.colour
+                            //child.tint = 0x008000;
+                        }
+                    });
+                }
+            });
+        }*/
+
+        /*function onPointerOut(container) {
+            container.on('pointerout', () => {
+                container.children.forEach(child => {
+                    //child.tint = child.originalColour
+                    child.alpha = 1
+                    /*if (child.tint === 0x008000) {
+                        child.tint = currentColour
+                    }
+                });
+            });
+        }*/
+
+        //onPointerOver(subContainer1);
+        //onPointerOver(subContainer2);
+        //onPointerOut(subContainer2);
+
+        /*lineContainer.on('pointerover', (e) => {
             if (!dragging) {
                 const localPosition = e.data.getLocalPosition(app.stage);
                 // Use localPosition.x and localPosition.y as needed
-                console.log('Mouse position on lineContainer:', localPosition.x, localPosition.y);
+                //console.log('Mouse position on lineContainer:', localPosition.x, localPosition.y);
                 lineContainer.children.forEach(child => {
                     if (localPosition.x > 0 && localPosition.x < canvasWidth && localPosition.y > 0 && localPosition.y < canvasWidth) {
                         child.alpha = 0.5
-                        console.log('inside the app.view')
+                        //console.log('inside the app.view')
                         child.originalColour = child.tint
                         currentColour = child.colour
                         //child.tint = 0x008000;
                     }
                 });
             }
-        });
+        });*/
 
-        lineContainer.on('pointerout', () => {
+        /*lineContainer.on('pointerout', () => {
             lineContainer.children.forEach(child => {
                 //child.tint = child.originalColour
                 child.alpha = 1
                 /*if (child.tint === 0x008000) {
                     child.tint = currentColour
-                }*/
+                }
             });
-        });
+        });*/
 
         //Dragging
-        let dragging = false;
+        //let dragging = false;
 
-        lineContainer.on('pointerdown', (event) => {
+        /*subContainer2.on('pointerdown', (event) => {
+            subContainer2.alpha = 0.5; // Visual cue for dragging
+            dragging = true;
+            subContainer2.draggingData = event.data;
+            subContainer2.startPosition = subContainer2.toGlobal(event.data.getLocalPosition(subContainer2));
+
+            // Start global move listener
+            app.view.addEventListener('pointermove', (event) => onDragMove(event, subContainer2));
+        });*/
+
+
+        /*lineContainer.on('pointerdown', (event) => {
             lineContainer.alpha = 0.5; // Visual cue for dragging
             dragging = true;
             lineContainer.draggingData = event.data;
@@ -181,32 +252,60 @@ onMounted(() => {
 
             // Start global move listener
             app.view.addEventListener('pointermove', onDragMove);
-        });
+        });*/
 
-        function onDragMove(event) {
+        /*function onDragMove(event, container) {
+            if (dragging) {
+                const newPosition = container.draggingData.getLocalPosition(app.stage);
+                container.x += (newPosition.x - container.startPosition.x);
+                container.y += (newPosition.y - container.startPosition.y);
+                container.startPosition = newPosition;
+            }
+        }*/
+
+        /*function onDragMove(event) {
             if (dragging) {
                 const newPosition = lineContainer.draggingData.getLocalPosition(app.stage);
                 lineContainer.x += (newPosition.x - lineContainer.startPosition.x);
                 lineContainer.y += (newPosition.y - lineContainer.startPosition.y);
                 lineContainer.startPosition = newPosition;
             }
-        }
+        }*/
 
-        function endDrag(event) {
+        /*function endDrag(event, container) {
             dragging = false;
-            lineContainer.alpha = 1;
+            container.alpha = 1;
             // Stop global move listener
-            app.view.removeEventListener('pointermove', onDragMove);
-            lineContainer.data = null;
-        }
+            app.view.removeEventListener('pointermove', onDragMove(undefined, subContainer2));
+            container.data = null;
+        }*/
 
-        lineContainer.on('pointerup', endDrag);
-        lineContainer.on('pointerupoutside', endDrag);
+        //lineContainer.on('pointerup', endDrag);
+        //subContainer2.on('pointerup', (event) => endDrag(event, subContainer2));
+        //subContainer2.on('pointerupoutside', (event) => endDrag(event, subContainer2));
+        //lineContainer.on('pointerupoutside', endDrag);
+
+        //lineContainer.addChild(subContainer1);
+        
+
+        //KEEP THIS 
+        /*oStore.$patch((state) => {
+            state.objects.push(subContainer1)
+        })
+        oStore.$patch((state) => {
+            state.objects.push(subContainer2)
+        })*/
+        //END KEEP THIS
 
 
-        app.stage.addChild(lineContainer);
+        //app.stage.addChild(lineContainer);
+        //app.stage.addChild(subContainer1);
+        app.stage.addChild(line_1.createLineObject());
+        app.stage.addChild(line_2.createLineObject());
+        //app.stage.addChild(subContainer2);
+        //oStore.addObject(lineContainer)
 
-        oStore.addObject(lineContainer)
+        //console.log(oStore.objects)
     }
 
     function getNumberAfterKeyword(sentence, keyword) {
@@ -230,7 +329,18 @@ onMounted(() => {
         return match ? match[1] : null; // Return the word if found, otherwise return null
     }
 
-    function parseCross(str, nthIteration) {
+    function regenerateTimeline(n) {
+        clearStage();
+        /*oStore.objects.forEach((object) => {
+            app.stage.addChild(object);
+        });*/
+        for (let i = 0; i < n; i++) {
+            app.stage.addChild(oStore.objects[i]);
+        }
+        app.renderer.render(app.stage);
+    }
+
+    function parseCross(str) {
         let xCoord = getNumberAfterKeyword(str, 'x') * 1;
         let yCoord = getNumberAfterKeyword(str, 'y') * 1;
         let color1 = getWordAfterKeyword(str, 'Spool');
@@ -255,48 +365,54 @@ onMounted(() => {
         let first_flag = false;
         let current_line_width = init;
 
-        // Iterate until the nth iteration and render only that line object
         for (let i = 0; i < passes; i++) {
-            //if (i === nthIteration) {
-                let current_line_width2 = current_line_width;
-                if (band === 0 && first_flag) {
-                    if (progressionType === "plus") {
-                        current_line_width = init + plus * i;
-                    } else if (progressionType === 'minus') {
-                        current_line_width = init + minus * i;
-                    }
+            let current_line_width2 = current_line_width;
+            if (band === 0 && first_flag) {
+                if (progressionType === "plus") {
+                    current_line_width = init + plus * i;
+                } else if (progressionType === 'minus') {
+                    current_line_width = init + minus * i;
                 }
-                generateLineObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width);
-                if (direction === 'Left') {
-                    yCoord = yCoord - current_line_width * Math.SQRT2;
-                } else if (direction === 'Up') {
-                    xCoord = xCoord + current_line_width * Math.SQRT2;
-                } else if (direction === 'Down') {
-                    xCoord = yCoord - current_line_width * Math.SQRT2;
-                } else if (direction === 'Right') {
-                    if (!first_flag) {
-                        yCoord = yCoord + current_line_width * Math.SQRT2;
-                        first_flag = true;
-                    } else {
-                        yCoord = yCoord + current_line_width * Math.SQRT2;
-                    }
+            }
+            generateLineObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width);
+            console.log(oStore.objects[i])
+            if (direction === 'Left') {
+                yCoord = yCoord - current_line_width * Math.SQRT2;
+            } else if (direction === 'Up') {
+                xCoord = xCoord + current_line_width * Math.SQRT2;
+            } else if (direction === 'Down') {
+                xCoord = xCoord - current_line_width * Math.SQRT2;
+            } else if (direction === 'Right') {
+                if (!first_flag) {
+                    yCoord = yCoord + current_line_width * Math.SQRT2;
+                    first_flag = true;
+                } else {
+                    yCoord = yCoord + current_line_width * Math.SQRT2;
                 }
-                currentWidth = currentWidth;
-                first_flag = true;
+            }
+            currentWidth = currentWidth;
+            first_flag = true;
             //}
         }
 
         app.renderer.render(app.stage);
     }
 
+    //let iterator = 0
     function addRunEventListener() {
         document.getElementById('menuRun').addEventListener('click', () => {
             clearStage();
-            let code = document.getElementById('code-editor').value;
-            let lines = code.split('\n')
+            sliderValue.value = [0]
+            oStore.$patch((state) => {
+                state.objects = []
+            })
 
-            lines.forEach((line, iterator) => {
-                parseCross(line)
+            let code = document.getElementById('code-editor').value;
+            let textBoxLines = code.split('\n')
+
+            textBoxLines.forEach((line, iterator) => {
+                parseCross(line, 3)
+                //iterator++
             })
 
         });
@@ -406,7 +522,8 @@ onMounted(() => {
                         <div
                             class="relative flex h-full min-h-[50vh] flex-col border border-l-0 bg-muted/50 p-4 lg:col-span-2">
                             <div class="flex gap-1 mb-4">
-                                <Slider :default-value="[0]" :max="sliderMaxValue" :step="1" />
+                                <Slider @update:modelValue="handleSliderChange" v-model="sliderValue"
+                                    :default-value="[1]" :max="sliderMaxValue" :step="1" />
                                 <div v-for="c in colours">
                                     <div :class="`bg-${c} w-8 h-8 hover:border-2`"
                                         :style="{ 'background-color': c + '!important' }"></div>
@@ -428,6 +545,8 @@ onMounted(() => {
                             <div id="canvasContainer" class="canvas-container"></div>
                             <div id="y-coordinate">asdf</div>
                             <div id="x-coordinate">asdf</div>
+                            <div>Cross X 100 Y 100 Spool_Up 4 Spool_Dn 1 Right plus 0 init# 20 passes 3 % 1.1
+                                !descriptive comment</div>
                             <Badge variant="outline" class="absolute font-untitledSans font-light right-2 top-2">
                                 Output
                             </Badge>
