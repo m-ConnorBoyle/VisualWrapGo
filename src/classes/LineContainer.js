@@ -1,4 +1,5 @@
 import Line from './Line.js';
+import { objectStore } from '../stores/objects-store.js';
 
 class LineContainer {
     constructor(canvasWidth, app) {
@@ -8,13 +9,14 @@ class LineContainer {
         this._canvasWidth = canvasWidth;
         this._app = app;
         this._currentColour
+        this._oStore = objectStore()
     }
 
     addLine(line) {
         if (!(line instanceof PIXI.Graphics)) {
             throw new TypeError('Expected argument of type Line');
         }
-        this._lineContainer.addChild(line);
+        this._lineContainer.addChild(line); 
     }
 
     onPointerOver() {
@@ -67,6 +69,7 @@ class LineContainer {
         this._lineContainer.alpha = 1;
         this._app.view.removeEventListener('pointermove', this.onDragMove.bind(this));
         this._lineContainer.data = null;
+        this._oStore.lastClickedContainer = this._lineContainer
     }
 
     createLineObject() {

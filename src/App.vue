@@ -7,33 +7,30 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { TooltipProvider } from 'radix-vue'
 import { coloursStore } from '/src/stores/colours-store'
-import { onMounted, onUnmounted, ref, toRaw, computed } from 'vue'
+import { onMounted, ref, toRaw, computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import { objectStore } from './stores/objects-store'
-import { DateField } from 'radix-vue/namespaced'
 import Line from './classes/Line'
 import LineContainer from './classes/LineContainer'
+import Canvas from './classes/Canvas'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 
 const cStore = coloursStore()
 const oStore = objectStore()
 const sliderValue = ref([0])
-//const sliderMaxValue = ref(oStore.objects.length)
 const sliderMaxValue = computed(() => oStore.objects.length)
-
-import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
-} from '@/components/ui/resizable'
-
 let colours = cStore.colours
-
 let canvasWidth = 400;
-const app = new PIXI.Application({
+let backgroundColour = 0xFFFFFF;
+
+
+/*const app = new PIXI.Application({
     width: canvasWidth,
     height: canvasWidth,
     backgroundColor: 0xFFFFFF,
-})
+})*/
+
+let app
 
 function handleSliderChange(newValue) {
     clearStage();
@@ -53,18 +50,34 @@ function handleButtonClick() {
 
 onMounted(() => {
     const canvasContainer = document.getElementById('canvasContainer');
+    let c1 = new Canvas('canvasContainer', canvasWidth, backgroundColour)
+    app = c1.newApp()
+    //const canvasContainer = c1.canvasContainer()
+    //const canvasContainer2 = document.getElementById('canvasContainer2');
     let globalZIndex = 0;
     let linesArr = []
 
-
-    app.view.classList.add('border');
+    //app.view.classList.add('border');
     canvasContainer.appendChild(app.view);
+    //canvasContainer2.appendChild(app2.view);
 
-    let hoverLine1 = new PIXI.Graphics(); let hoverLine2 = new PIXI.Graphics(); let hoverLine3 = new PIXI.Graphics(); let hoverLine4 = new PIXI.Graphics(); let hoverLine5 = new PIXI.Graphics(); let hoverLine6 = new PIXI.Graphics();
+    /*function createHoverLines(app) {
+        let hoverLines = [];
+        for (let i = 0; i < 6; i++) {
+            hoverLines.push(new PIXI.Graphics());
+        }
+        app.stage.addChild(...hoverLines);
+        return hoverLines;
+    }*/
 
-    app.stage.addChild(hoverLine1, hoverLine2, hoverLine3, hoverLine4, hoverLine5, hoverLine6);
+    //let hoverLine1 = new PIXI.Graphics(); let hoverLine2 = new PIXI.Graphics(); let hoverLine3 = new PIXI.Graphics(); let hoverLine4 = new PIXI.Graphics(); let hoverLine5 = new PIXI.Graphics(); let hoverLine6 = new PIXI.Graphics();
 
-    app.view.addEventListener('pointermove', (e) => {
+    //let hoverLines = createHoverLines(app);
+
+    //app.stage.addChild(hoverLine1, hoverLine2, hoverLine3, hoverLine4, hoverLine5, hoverLine6);
+    //app2.stage.addChild(hoverLine1, hoverLine2, hoverLine3, hoverLine4, hoverLine5, hoverLine6);
+
+    /*app.view.addEventListener('pointermove', (e) => {
         let mouseX = Math.round(e.offsetX);
         let mouseY = Math.round(e.offsetY);
         let myOffset = canvasWidth / 2;
@@ -85,9 +98,9 @@ onMounted(() => {
 
             app.renderer.render(app.stage);
         });
-    });
+    });*/
 
-    app.view.addEventListener('pointerout', () => {
+    /*app.view.addEventListener('pointerout', () => {
         hoverLine1.clear();
         hoverLine2.clear();
         hoverLine3.clear();
@@ -95,7 +108,7 @@ onMounted(() => {
         hoverLine5.clear();
         hoverLine6.clear();
         app.renderer.render(app.stage);
-    });
+    });*/
 
     function drawDottedLine(graphics, start, angle, distance, color, lineWidth, dashArray) {
         const [dashSize, gapSize] = dashArray;
@@ -124,7 +137,7 @@ onMounted(() => {
 
         let line_1 = new LineContainer(canvasWidth, app)
         line_1.addLine(new Line(startX, startY, colour1, angleInDegrees, thickness, canvasWidth).createLine())
-        line_1.addLine(new Line(startX2, startY2, colour1, angleInDegrees, thickness, canvasWidth).createLine()) 
+        line_1.addLine(new Line(startX2, startY2, colour1, angleInDegrees, thickness, canvasWidth).createLine())
         line_1.addLine(new Line(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour1, angleInDegrees, thickness, canvasWidth).createLine())
         line_1.addLine(new Line(startX - canvasWidth, startY - canvasWidth, colour1, angleInDegrees, thickness, canvasWidth).createLine())
 
@@ -218,13 +231,13 @@ onMounted(() => {
             }
             generateLineObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width);
             console.log(oStore.objects[i])
-            if (direction === 'Left') {
+            if (direction.toUpperCase() === 'LEFT') {
                 yCoord = yCoord - current_line_width * Math.SQRT2;
-            } else if (direction === 'Up') {
+            } else if (direction.toUpperCase() === 'UP') {
                 xCoord = xCoord + current_line_width * Math.SQRT2;
-            } else if (direction === 'Down') {
+            } else if (direction.toUpperCase() === 'DOWN') {
                 xCoord = xCoord - current_line_width * Math.SQRT2;
-            } else if (direction === 'Right') {
+            } else if (direction.toUpperCase() === 'RIGHT') {
                 if (!first_flag) {
                     yCoord = yCoord + current_line_width * Math.SQRT2;
                     first_flag = true;
@@ -234,13 +247,11 @@ onMounted(() => {
             }
             currentWidth = currentWidth;
             first_flag = true;
-            //}
         }
 
         app.renderer.render(app.stage);
     }
 
-    //let iterator = 0
     function addRunEventListener() {
         document.getElementById('menuRun').addEventListener('click', () => {
             clearStage();
@@ -252,9 +263,8 @@ onMounted(() => {
             let code = document.getElementById('code-editor').value;
             let textBoxLines = code.split('\n')
 
-            textBoxLines.forEach((line, iterator) => {
+            textBoxLines.forEach((line) => {
                 parseCross(line, 3)
-                //iterator++
             })
 
         });
@@ -262,7 +272,6 @@ onMounted(() => {
     addRunEventListener();
 
     app.renderer.render(app.stage);
-
 
 })
 
@@ -286,7 +295,7 @@ onMounted(() => {
                                 <SquareTerminal class="size-5" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent side="right" :side-offset="5">
+                        <TooltipContent class="font-untitledSans" side="right" :side-offset="5">
                             Script Editor
                         </TooltipContent>
                     </Tooltip>
@@ -298,7 +307,7 @@ onMounted(() => {
                                 <Settings2 class="size-5" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent side="right" :side-offset="5">
+                        <TooltipContent class="font-untitledSans" side="right" :side-offset="5">
                             Settings
                         </TooltipContent>
                     </Tooltip>
@@ -341,17 +350,17 @@ onMounted(() => {
             <main class="grid flex-1 gap-4 overflow-auto w-full md:grid-cols-1 lg:grid-cols-1">
                 <ResizablePanelGroup direction="horizontal">
                     <ResizablePanel :default-size="15">
-                        <div class="relative hidden flex-col items-start gap-8 md:flex ms-2 pe-4">
+                        <div class="relative hidden flex-col items-start gap-8 md:flex ms-2 pe-1">
                             <form class="grid w-full items-start gap-6">
-                                <fieldset class="grid gap-6 hover:shadow-sm border p-4">
-                                    <legend class="text-md font-untitledSans font-bold">
+                                <fieldset class="grid gap-6 hover:shadow-sm border mt-1 p-4">
+                                    <!--<legend class="text-md font-untitledSans text-s font-bold">
                                         Script Editor
-                                    </legend>
+                                    </legend>-->
                                     <div class="gap-3">
                                         <Label for="content"></Label>
-                                        <Textarea id="code-editor" placeholder="" class="min-h-[9.5rem]" />
+                                        <Textarea id="code-editor" placeholder="" class="min-h-[9.5rem] font-untitledSans" />
                                         <Button size="sm" variant="outline" id="menuRun"
-                                            @click.prevent="handleButtonClick" class="mt-4">
+                                            @click.prevent="handleButtonClick" class="mt-4 font-untitledSans">
                                             Generate</Button>
                                     </div>
                                 </fieldset>
@@ -362,13 +371,17 @@ onMounted(() => {
                         class="w-1 hover-delay" with-handle />
                     <ResizablePanel>
                         <div
-                            class="relative flex h-full min-h-[50vh] flex-col border border-l-0 bg-muted/50 p-4 lg:col-span-2">
-                            <div class="flex gap-1 mb-4">
+                            class="relative flex h-full min-h-[50vh] flex-col border-l-0 bg-muted/50 p-4 lg:col-span-2">
+                            <div class="flex gap-1 mb-4 mt-6 w-1/2">
                                 <Slider @update:modelValue="handleSliderChange" v-model="sliderValue"
                                     :default-value="[1]" :max="sliderMaxValue" :step="1" />
-                                <div v-for="c in colours">
+                            </div>
+                            <div class="relative flex gap-1 mb-6 mt-6">
+                                <div v-for="c, i in colours" class="columns-1">
                                     <div :class="`bg-${c} w-8 h-8 hover:border-2`"
-                                        :style="{ 'background-color': c + '!important' }"></div>
+                                        :style="{ 'background-color': c + '!important' }">
+                                    </div>
+                                    <div class="text-center font-untitledSans">{{ i }}</div>
                                 </div>
                                 <TooltipProvider>
                                     <Tooltip>
@@ -384,10 +397,13 @@ onMounted(() => {
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
-                            <div id="canvasContainer" class="canvas-container"></div>
+                            <div class="flex gap-5">
+                                <div id="canvasContainer" class="canvas-container"></div>
+                                <div id="canvasContainer2" class="canvas-container"></div>
+                            </div>
                             <div id="y-coordinate">asdf</div>
                             <div id="x-coordinate">asdf</div>
-                            <div>Cross X 100 Y 100 Spool_Up 4 Spool_Dn 1 Right plus 0 init# 20 passes 3 % 1.1
+                            <div class="font-untitledSans">Cross X 100 Y 100 Spool_Up 4 Spool_Dn 1 Right plus 0 init# 20 passes 3 % 1.1
                                 !descriptive comment</div>
                             <Badge variant="outline" class="absolute font-untitledSans font-light right-2 top-2">
                                 Output
