@@ -16,7 +16,7 @@ class LineContainer {
         if (!(line instanceof PIXI.Graphics)) {
             throw new TypeError('Expected argument of type Line');
         }
-        this._lineContainer.addChild(line); 
+        this._lineContainer.addChild(line);
     }
 
     onPointerOver() {
@@ -64,6 +64,24 @@ class LineContainer {
         })
     }
 
+    onClick() {
+        this._lineContainer.on('click', (e) => {
+            if (!this._dragging) {
+                const localPosition = e.data.getLocalPosition(this._app.stage)
+                this._lineContainer.children.forEach(child => {
+                    if (localPosition.x > 0 && localPosition.x < this._canvasWidth && localPosition.y > 0 && localPosition.y < this._canvasWidth) {
+                        child.alpha = 0.5
+                        child.originalColour = child.tint
+                        this._currentColour = child.colour
+                        const event = new CustomEvent('linecontainer:hover', {
+                            detail: { x: localPosition.x, y: localPosition.y }
+                        });
+                        window.dispatchEvent(event);
+                    }
+                });
+            }
+        });
+    }
     endDrag(event) {
         this._dragging = false;
         this._lineContainer.alpha = 1;
@@ -79,6 +97,7 @@ class LineContainer {
         this.onPointerOver()
         this.onPointerOut()
         this.onPointerDown()
+        this.onClick()
         this._lineContainer.on('pointerup', this.endDrag.bind(this));
         this._lineContainer.on('pointerupoutside', this.endDrag.bind(this));
         return this._lineContainer

@@ -1,4 +1,6 @@
-<script setup lang="ts">
+// @ts-nocheck
+
+<script setup>
 import { PlusCircleIcon, LifeBuoy, Settings2, SquareTerminal, SquareUser, Triangle, } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,6 +16,18 @@ import Line from './classes/Line'
 import LineContainer from './classes/LineContainer'
 import Canvas from './classes/Canvas'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
+import LeftBar from './LeftBar.vue'
+import anime from 'animejs/lib/anime.es.js';
+import ScriptEditor from './ScriptEditor.vue'
+import { Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover'
+import { Input } from '@/components/ui/input'
+/*import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Input } from '@/components/ui/input'*/
+
 
 const cStore = coloursStore()
 const oStore = objectStore()
@@ -22,6 +36,12 @@ const sliderMaxValue = computed(() => oStore.objects.length)
 let colours = cStore.colours
 let canvasWidth = 400;
 let backgroundColour = 0xFFFFFF;
+
+
+let coordData = {
+    x: 0,
+    y: 0
+}
 
 
 /*const app = new PIXI.Application({
@@ -49,11 +69,19 @@ function handleButtonClick() {
 }
 
 onMounted(() => {
-    const canvasContainer = document.getElementById('canvasContainer');
+    /*window.addEventListener('linecontainer:hover', function (event) {
+        // Assuming popover is a DOM element
+        let button = document.getElementById('myPopoverButton');    
+        button.click();
+        const popover = popoverContentRef.value
+        popover.style.left = event.detail.x + 'px';
+        popover.style.top = event.detail.y + 'px';
+        popover.style.display = 'block';
+    });*/
     let c1 = new Canvas('canvasContainer', canvasWidth, backgroundColour)
     app = c1.newApp()
-    //const canvasContainer = c1.canvasContainer()
-    //const canvasContainer2 = document.getElementById('canvasContainer2');
+    //const canvasContainer = document.getElementById('canvasContainer');
+    const canvasContainer = c1.canvasContainer
     let globalZIndex = 0;
     let linesArr = []
 
@@ -220,6 +248,7 @@ onMounted(() => {
         let first_flag = false;
         let current_line_width = init;
 
+
         for (let i = 0; i < passes; i++) {
             let current_line_width2 = current_line_width;
             if (band === 0 && first_flag) {
@@ -265,11 +294,32 @@ onMounted(() => {
 
             textBoxLines.forEach((line) => {
                 parseCross(line, 3)
+                app.renderer.render(app.stage);
             })
 
         });
     }
-    addRunEventListener();
+    window.addEventListener('keydown', function (event) {
+        if (event.altKey && event.key === 'Enter') {
+            console.log('Alt + Enter pressed!');
+            clearStage();
+            sliderValue.value = [0]
+            oStore.$patch((state) => {
+                state.objects = []
+            })
+
+            let code = document.querySelector('.ace_text-input').value;
+            let textBoxLines = code.split('\n')
+
+            textBoxLines.forEach((line) => {
+                console.log('asdf')
+                parseCross(line, 3)
+            })
+
+        }
+
+    })
+    //addRunEventListener();
 
     app.renderer.render(app.stage);
 
@@ -280,85 +330,27 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="grid h-screen w-full pl-[53px]">
-        <aside class="inset-y fixed  left-0 z-20 flex h-full flex-col border-r">
-            <div class="border-b p-2">
-                <Button variant="outline" size="icon" class="invisible" aria-label="Home">
-                    <Triangle class="size-5 fill-foreground " />
-                </Button>
-            </div>
-            <nav class="grid gap-1 p-2">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <Button variant="outline" size="icon" class=" bg-muted " aria-label="VisualWrap">
-                                <SquareTerminal class="size-5" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent class="font-untitledSans" side="right" :side-offset="5">
-                            Script Editor
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <Button variant="ghost" size="icon" class="rounded-lg " aria-label="Settings">
-                                <Settings2 class="size-5" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent class="font-untitledSans" side="right" :side-offset="5">
-                            Settings
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </nav>
-            <nav class="mt-auto grid gap-1 p-2">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <Button variant="ghost" size="icon" class="mt-auto " aria-label="Help">
-                                <LifeBuoy class="size-5" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" :side-offset="5">
-                            Help
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <Button variant="ghost" size="icon" class="mt-auto rounded-lg" aria-label="Account">
-                                <SquareUser class="size-5" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" :side-offset="5">
-                            Account
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </nav>
-        </aside>
-        <div class="flex flex-col">
-            <header class="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
-                <h1 class="text-3xl font-untitledSans font-medium ">
-                    VisualWrap [TEST]
-                </h1>
-
-            </header>
-            <main class="grid flex-1 gap-4 overflow-auto w-full md:grid-cols-1 lg:grid-cols-1">
-                <ResizablePanelGroup direction="horizontal">
-                    <ResizablePanel :default-size="15">
+    <header class="sticky top-0 z-10 flex h-[57px] items-center bg-stone-800 gap-1 border-b px-4">
+        <h1 class="text-3xl text-white font-untitledSans font-medium ">
+            VisualWrap [TEST]
+        </h1>
+    </header>
+    <div class="grid h-[90vh] w-full pl-[53px]">
+        <LeftBar />
+        <div class="flex flex-col justify-center items-center">
+            <!-- here -->
+            <main class="border-l gap-4 overflow-auto w-full flex md:grid-cols-1 lg:grid-cols-1 justify-center">
+                <!--<ResizablePanel :default-size="15">
                         <div class="relative hidden flex-col items-start gap-8 md:flex ms-2 pe-1">
                             <form class="grid w-full items-start gap-6">
                                 <fieldset class="grid gap-6 hover:shadow-sm border mt-1 p-4">
-                                    <!--<legend class="text-md font-untitledSans text-s font-bold">
+                                    <legend class="text-md font-untitledSans text-s font-bold">
                                         Script Editor
-                                    </legend>-->
+                                    </legend>
                                     <div class="gap-3">
                                         <Label for="content"></Label>
-                                        <Textarea id="code-editor" placeholder="" class="min-h-[9.5rem] font-untitledSans" />
+                                        <Textarea id="code-editor" placeholder=""
+                                            class="min-h-[9.5rem] font-untitledSans" />
                                         <Button size="sm" variant="outline" id="menuRun"
                                             @click.prevent="handleButtonClick" class="mt-4 font-untitledSans">
                                             Generate</Button>
@@ -366,61 +358,67 @@ onMounted(() => {
                                 </fieldset>
                             </form>
                         </div>
-                    </ResizablePanel>
-                    <ResizableHandle id="resizable-handle1" @mouseenter="console.log('asdf')" ref="resizeHandle"
-                        class="w-1 hover-delay" with-handle />
-                    <ResizablePanel>
-                        <div
-                            class="relative flex h-full min-h-[50vh] flex-col border-l-0 bg-muted/50 p-4 lg:col-span-2">
-                            <div class="flex gap-1 mb-4 mt-6 w-1/2">
-                                <Slider @update:modelValue="handleSliderChange" v-model="sliderValue"
-                                    :default-value="[1]" :max="sliderMaxValue" :step="1" />
+                    </ResizablePanel>-->
+                <div class="relative flex h-full min-h-[20vh] items-center flex-col p-4 lg:col-span-2"
+                    id="mainContainer">
+                    <div class="flex gap-1 mb-4 mt-6 w-1/2">
+                        <Slider @update:modelValue="handleSliderChange" v-model="sliderValue" :default-value="[1]"
+                            :max="sliderMaxValue" :step="1" />
+                    </div>
+                    <div class="relative flex gap-1 mb-6 mt-6">
+                        <div v-for="c, i in colours" class="columns-1">
+                            <div :class="`bg-${c} w-8 h-8 hover:border-2`"
+                                :style="{ 'background-color': c + '!important' }">
                             </div>
-                            <div class="relative flex gap-1 mb-6 mt-6">
-                                <div v-for="c, i in colours" class="columns-1">
-                                    <div :class="`bg-${c} w-8 h-8 hover:border-2`"
-                                        :style="{ 'background-color': c + '!important' }">
-                                    </div>
-                                    <div class="text-center font-untitledSans">{{ i }}</div>
-                                </div>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger as-child>
-                                            <Button variant="ghost" size="icon" class="rounded-lg "
-                                                aria-label="Add Spool">
-                                                <PlusCircleIcon class=""></PlusCircleIcon>
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right" :side-offset="5">
-                                            Add Spool
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
-                            <div class="flex gap-5">
-                                <div id="canvasContainer" class="canvas-container"></div>
-                                <div id="canvasContainer2" class="canvas-container"></div>
-                            </div>
-                            <div id="y-coordinate">asdf</div>
-                            <div id="x-coordinate">asdf</div>
-                            <div class="font-untitledSans">Cross X 100 Y 100 Spool_Up 4 Spool_Dn 1 Right plus 0 init# 20 passes 3 % 1.1
-                                !descriptive comment</div>
-                            <Badge variant="outline" class="absolute font-untitledSans font-light right-2 top-2">
-                                Output
-                            </Badge>
-                            <div class="flex-1" />
+                            <div class="text-center font-untitledSans">{{ i + 1 }}</div>
                         </div>
-                    </ResizablePanel>
-                </ResizablePanelGroup>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger as-child>
+                                    <Button variant="ghost" size="icon" class="rounded-lg" aria-label="Add Spool">
+                                        <PlusCircleIcon class=""></PlusCircleIcon>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent class="font-untitledSans" side="right" :side-offset="5">
+                                    Add Spool
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                    <div class="flex gap-5">
+                        <div id="canvasContainer" class="canvas-container"></div>
+                        <div id="canvasContainer2" class="canvas-container"></div>
+                    </div>
+                    <div id="y-coordinate">asdf</div>
+                    <div id="x-coordinate">asdf</div>
+                    <div class="font-untitledSans">Cross X 100 Y 100 Spool_Up 4 Spool_Dn 1 Right plus 0 init# 20
+                        passes 3 % 1.1
+                        !descriptive comment</div>
+                    <div class="flex-1" />
+                </div>
             </main>
         </div>
+    </div>
+    <ScriptEditor />
+    <div class="footer bg-stone-800 border-t w-full">
+        <div id="coordinate1" class="text-white"></div>
     </div>
 </template>
 
 <style scoped>
+.footer {
+    bottom: 0%;
+    position: fixed;
+    height: 30px;
+}
+
 .hover-delay {
     transition: background-color 0.05 ease;
     transition: width 0.05 ease;
     transition-delay: 0.05;
+}
+
+#mainContainer {
+    height: calc(100vh - 57px - 30px);
 }
 </style>

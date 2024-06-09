@@ -1,6 +1,7 @@
+import anime from 'animejs/lib/anime.es.js';
+import { objectStore } from '../stores/objects-store';
 class Canvas {
     constructor(parentId, width, backgroundColor) {
-        debugger
         this._parentId = parentId
         this._width = width
         this._backgroundColor = backgroundColor
@@ -27,22 +28,43 @@ class Canvas {
 
     onPointerMove() {
         this._app.view.addEventListener('pointermove', (e) => {
+            let oStore = objectStore()
             let mouseX = Math.round(e.offsetX);
             let mouseY = Math.round(e.offsetY);
             let myOffset = this._width / 2;
 
             // Update coordinate displays
-            document.getElementById('x-coordinate').textContent = mouseX;
-            document.getElementById('y-coordinate').textContent = mouseY;
+            //document.getElementById('x-coordinate').textContent = mouseX;
+            //document.getElementById('y-coordinate').textContent = mouseY;
+
+            //let coordData = { x: 0, y: 0 };
+            let coordData = oStore.coordinates
+
+                    document.getElementById('x-coordinate').textContent = coordData.x;
+                    document.getElementById('y-coordinate').textContent = coordData.y;
+            // Use anime.js to animate the updates
+            /*anime({
+                targets: coordData,
+                x: mouseX,
+                y: mouseY,
+                round: 1,
+                update: function () {
+                    // Update coordinate displays
+                    document.getElementById('x-coordinate').textContent = coordData.x;
+                    document.getElementById('y-coordinate').textContent = coordData.y;
+                }
+            });*/
+            coordData.x = mouseX
+            coordData.y = mouseY    
 
             requestAnimationFrame(() => {
-                this._hoverLines[0].clear(); 
-                this._hoverLines[1].clear(); 
-                this._hoverLines[2].clear(); 
-                this._hoverLines[3].clear(); 
-                this._hoverLines[4].clear(); 
-                this._hoverLines[5].clear(); 
-                
+                this._hoverLines[0].clear();
+                this._hoverLines[1].clear();
+                this._hoverLines[2].clear();
+                this._hoverLines[3].clear();
+                this._hoverLines[4].clear();
+                this._hoverLines[5].clear();
+
                 this.drawDottedLine(this._hoverLines[0], { x: mouseX, y: mouseY }, Math.PI / 4, 800, 0x000000, 2, [3, 3])
                 this.drawDottedLine(this._hoverLines[1], { x: mouseX, y: mouseY }, -Math.PI / 4, 800, 0x000000, 2, [3, 3])
                 this.drawDottedLine(this._hoverLines[2], { x: mouseX + myOffset, y: mouseY - myOffset }, Math.PI / 4, 800, 0x000000, 2, [3, 3])
