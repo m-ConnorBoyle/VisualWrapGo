@@ -1,6 +1,7 @@
 import Line from './Line.js';
 import { objectStore } from '../stores/objects-store.js';
 
+
 class LineContainer {
     constructor(canvasWidth, app) {
         this._lineContainer = new PIXI.Container();
@@ -9,7 +10,7 @@ class LineContainer {
         this._canvasWidth = canvasWidth;
         this._app = app;
         this._currentColour
-        this._oStore = objectStore()
+        //const oStore = objectStore()
     }
 
     addLine(line) {
@@ -87,10 +88,11 @@ class LineContainer {
         this._lineContainer.alpha = 1;
         this._app.view.removeEventListener('pointermove', this.onDragMove.bind(this));
         this._lineContainer.data = null;
-        this._oStore.lastClickedContainer = this._lineContainer
+        //oStore.lastClickedContainer = this._lineContainer
     }
 
     createLineObject() {
+        if (this.lineObject) return this.lineObject
         this._lineContainer.interactive = true
         this._lineContainer.buttonMode = true
         let myOffset = this._canvasWidth / 2

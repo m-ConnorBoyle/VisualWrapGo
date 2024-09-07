@@ -1,26 +1,18 @@
 // @ts-nocheck
 
 <script setup>
-import { PlusCircleIcon, LifeBuoy, Settings2, SquareTerminal, SquareUser, Triangle, } from 'lucide-vue-next'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { TooltipProvider } from 'radix-vue'
 import { coloursStore } from '/src/stores/colours-store'
 import { onMounted, ref, toRaw, computed } from 'vue'
-import { Slider } from '@/components/ui/slider'
 import { objectStore } from './stores/objects-store'
 import Line from './classes/Line'
 import LineContainer from './classes/LineContainer'
 import Canvas from './classes/Canvas'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import LeftBar from './LeftBar.vue'
 import anime from 'animejs/lib/anime.es.js';
 import ScriptEditor from './ScriptEditor.vue'
-import { Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover'
-import { Input } from '@/components/ui/input'
+import { getFirstWord, getNumberAfterKeyword, getWordAfterKeyword, findFirstWordAfterFourthNumber } from './helpers.ts'
+import { editorStore } from './stores/editor-store'
+
 /*import {
   Popover,
   PopoverContent,
@@ -31,134 +23,50 @@ import { Input } from '@/components/ui/input'*/
 
 const cStore = coloursStore()
 const oStore = objectStore()
+const eStore = editorStore()
 const sliderValue = ref([0])
 const sliderMaxValue = computed(() => oStore.objects.length)
+//const sliderMaxValue = ref(100)
 let colours = cStore.colours
 let canvasWidth = 400;
 let backgroundColour = 0xFFFFFF;
-
-
-let coordData = {
-    x: 0,
-    y: 0
-}
-
-
-/*const app = new PIXI.Application({
-    width: canvasWidth,
-    height: canvasWidth,
-    backgroundColor: 0xFFFFFF,
-})*/
-
 let app
 
-function handleSliderChange(newValue) {
+function handleSliderChange(event) {
+    let newValue = event.target.value
     clearStage();
+
     for (let i = 0; i < newValue; i++) {
-        app.stage.addChild(toRaw(oStore.objects[i]).createLineObject())
+
+        if (oStore.objects.length > 0) {
+            if (i < oStore.objects.length) {
+                console.log("changed")
+                app.stage.addChild(toRaw(oStore.objects[i]).createLineObject())
+                //app.stage.addChild(toRaw(oStore.objects[i]))
+                //app.stage.addChild(toRaw(oStore.objects[i]).createLineObject())
+                app.renderer.render(app.stage)
+                //app.renderer.textureGC.run(); // Manually run texture garbage collection*/
+            }
+        }
     }
-    app.renderer.render(app.stage)
 }
+
 
 function clearStage() {
     app.stage.removeChildren()
 }
 
-function handleButtonClick() {
-    console.log('Button clicked!')
-}
 
 onMounted(() => {
-    /*window.addEventListener('linecontainer:hover', function (event) {
-        // Assuming popover is a DOM element
-        let button = document.getElementById('myPopoverButton');    
-        button.click();
-        const popover = popoverContentRef.value
-        popover.style.left = event.detail.x + 'px';
-        popover.style.top = event.detail.y + 'px';
-        popover.style.display = 'block';
-    });*/
     let c1 = new Canvas('canvasContainer', canvasWidth, backgroundColour)
     app = c1.newApp()
-    //const canvasContainer = document.getElementById('canvasContainer');
     const canvasContainer = c1.canvasContainer
     let globalZIndex = 0;
     let linesArr = []
 
-    //app.view.classList.add('border');
     canvasContainer.appendChild(app.view);
-    //canvasContainer2.appendChild(app2.view);
 
-    /*function createHoverLines(app) {
-        let hoverLines = [];
-        for (let i = 0; i < 6; i++) {
-            hoverLines.push(new PIXI.Graphics());
-        }
-        app.stage.addChild(...hoverLines);
-        return hoverLines;
-    }*/
-
-    //let hoverLine1 = new PIXI.Graphics(); let hoverLine2 = new PIXI.Graphics(); let hoverLine3 = new PIXI.Graphics(); let hoverLine4 = new PIXI.Graphics(); let hoverLine5 = new PIXI.Graphics(); let hoverLine6 = new PIXI.Graphics();
-
-    //let hoverLines = createHoverLines(app);
-
-    //app.stage.addChild(hoverLine1, hoverLine2, hoverLine3, hoverLine4, hoverLine5, hoverLine6);
-    //app2.stage.addChild(hoverLine1, hoverLine2, hoverLine3, hoverLine4, hoverLine5, hoverLine6);
-
-    /*app.view.addEventListener('pointermove', (e) => {
-        let mouseX = Math.round(e.offsetX);
-        let mouseY = Math.round(e.offsetY);
-        let myOffset = canvasWidth / 2;
-
-        // Update coordinate displays
-        document.getElementById('x-coordinate').textContent = mouseX;
-        document.getElementById('y-coordinate').textContent = mouseY;
-
-        requestAnimationFrame(() => {
-            hoverLine1.clear(); hoverLine2.clear(); hoverLine3.clear(); hoverLine4.clear(); hoverLine5.clear(); hoverLine6.clear();
-
-            drawDottedLine(hoverLine1, { x: mouseX, y: mouseY }, Math.PI / 4, 800, 0x000000, 2, [3, 3])
-            drawDottedLine(hoverLine2, { x: mouseX, y: mouseY }, -Math.PI / 4, 800, 0x000000, 2, [3, 3])
-            drawDottedLine(hoverLine3, { x: mouseX + myOffset, y: mouseY - myOffset }, Math.PI / 4, 800, 0x000000, 2, [3, 3])
-            drawDottedLine(hoverLine4, { x: mouseX, y: mouseY - canvasWidth }, -Math.PI / 4, 800, 0x000000, 2, [3, 3])
-            drawDottedLine(hoverLine5, { x: mouseX + myOffset, y: mouseY + myOffset }, -Math.PI / 4, 800, 0x000000, 2, [3, 3])
-            drawDottedLine(hoverLine6, { x: mouseX - myOffset, y: mouseY + myOffset }, Math.PI / 4, 800, 0x000000, 2, [3, 3])
-
-            app.renderer.render(app.stage);
-        });
-    });*/
-
-    /*app.view.addEventListener('pointerout', () => {
-        hoverLine1.clear();
-        hoverLine2.clear();
-        hoverLine3.clear();
-        hoverLine4.clear();
-        hoverLine5.clear();
-        hoverLine6.clear();
-        app.renderer.render(app.stage);
-    });*/
-
-    function drawDottedLine(graphics, start, angle, distance, color, lineWidth, dashArray) {
-        const [dashSize, gapSize] = dashArray;
-        const dashLength = dashSize + gapSize;
-        const dashCount = Math.floor((distance * 2) / dashLength);
-
-        const dx = Math.cos(angle);
-        const dy = Math.sin(angle);
-
-        for (let i = -dashCount / 2; i < dashCount / 2; i++) {
-            const segmentStartX = start.x + (i * dashLength) * dx;
-            const segmentStartY = start.y + (i * dashLength) * dy;
-            const segmentEndX = segmentStartX + (dashSize * dx);
-            const segmentEndY = segmentStartY + (dashSize * dy);
-
-            graphics.lineStyle(lineWidth, color);
-            graphics.moveTo(segmentStartX, segmentStartY);
-            graphics.lineTo(segmentEndX, segmentEndY);
-        }
-    }
-
-    function generateLineObject(startX, startY, colour1, colour2, angleInDegrees, thickness) {
+    function generateCrossObject(startX, startY, colour1, colour2, angleInDegrees, thickness) {
         let myOffset = canvasWidth / 2;
         let startX2 = startX + myOffset;
         let startY2 = startY + myOffset;
@@ -191,53 +99,60 @@ onMounted(() => {
         app.stage.addChild(line_2Object);
     }
 
-    function getNumberAfterKeyword(sentence, keyword) {
-        const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-        const regex = new RegExp(`${escapedKeyword}\\s+(\\S+)`, 'i');
-        const matches = sentence.match(regex);
-        return Number(matches ? matches[1] : null)
-    }
+    function generateThreadObject(startX, startY, colour, angleInDegrees, thickness, type) {
+        let myOffset = canvasWidth / 2;
+        let startX2 = startX + myOffset;
+        let startY2 = startY + myOffset;
 
-    function getWordAfterKeyword(sentence, keyword) {
-        const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-        const regex = new RegExp(`${escapedKeyword}[^\\s]*\\s+(\\S+)`, 'i')
-        const matches = sentence.match(regex)
-        return matches ? matches[1] : null
-    }
-
-    function findFirstWordAfterFourthNumber(sentence) {
-        // Regex pattern to find the first word after the fourth number
-        const pattern = /(?:\d+\D+){3}\d+[^a-zA-Z\d]*(\w+)/;
-        const match = sentence.match(pattern);
-        return match ? match[1] : null; // Return the word if found, otherwise return null
-    }
-
-    function regenerateTimeline(n) {
-        clearStage();
-        /*oStore.objects.forEach((object) => {
-            app.stage.addChild(object);
-        });*/
-        for (let i = 0; i < n; i++) {
-            app.stage.addChild(oStore.objects[i]);
+        let line
+        if (type === 'threadDown') {
+            line = new LineContainer(canvasWidth, app)
+            line.addLine(new Line(startX, startY, colour, angleInDegrees, thickness, canvasWidth).createLine())
+            line.addLine(new Line(startX2, startY2, colour, angleInDegrees, thickness, canvasWidth).createLine())
+            line.addLine(new Line(startX2 - canvasWidth * 1.5, startY2 - myOffset, colour, angleInDegrees, thickness, canvasWidth).createLine())
+            line.addLine(new Line(startX - canvasWidth, startY - canvasWidth, colour, angleInDegrees, thickness, canvasWidth).createLine())
+        } else if (type === 'threadUp') {
+            line = new LineContainer(canvasWidth, app)
+            line.addLine(new Line(startX2, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
+            line.addLine(new Line(startX2 + canvasWidth, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
+            line.addLine(new Line(startX - myOffset, startY2, colour2, 360 - angleInDegrees, thickness, canvasWidth).createLine())
         }
-        app.renderer.render(app.stage);
+
+        let lineObject = line.createLineObject()
+
+        oStore.$patch((state) => {
+            state.objects.push(lineObject)
+        })
+
+        app.stage.addChild(lineObject);
     }
 
-    function parseCross(str) {
-        let xCoord = getNumberAfterKeyword(str, 'x') * 1;
-        let yCoord = getNumberAfterKeyword(str, 'y') * 1;
-        let color1 = getWordAfterKeyword(str, 'Spool');
-        let color2 = getWordAfterKeyword(str, 'Spool_Dn');
-        let band = getNumberAfterKeyword(str, 'Band') * 1;
-        let minus = getNumberAfterKeyword(str, 'minus') * 1;
-        let plus = getNumberAfterKeyword(str, 'plus') * 1;
-        let progressionType = "";
+
+    function determinePath(str, appCanvas) {
+        let path = getFirstWord(str).toUpperCase()
+        if (path === 'CROSS') parseItem(str, appCanvas, 'cross')
+        else if (path === 'THREAD_UP') parseItem(str, appCanvas, 'threadDown')
+        else if (path === 'THREAD_DN') parseItem(str, appCanvas, 'threadUp')
+    }
+
+    function parseItem(str, appCanvas, itemType) {
+        let xCoord = getNumberAfterKeyword(str, 'x') * 1
+        let yCoord = getNumberAfterKeyword(str, 'y') * 1
+        let color1 = getWordAfterKeyword(str, 'Spool').toUpperCase()
+        let color2
+        if (itemType === 'cross' || itemType === 'box') {
+            color2 = getWordAfterKeyword(str, 'Spool_Up').toUpperCase()
+        }
+        let band = getNumberAfterKeyword(str, 'Band') * 1
+        let minus = getNumberAfterKeyword(str, 'minus') * 1
+        let plus = getNumberAfterKeyword(str, 'plus') * 1
+        let progressionType = ""
         if (minus != 0) {
-            progressionType = "minus";
+            progressionType = "MINUS"
         } else if (plus != 0) {
-            progressionType = "plus";
+            progressionType = "PLUS"
         } else if (band != 0) {
-            progressionType = 'band';
+            progressionType = 'BAND'
         }
         let direction = findFirstWordAfterFourthNumber(str);
         let init = getNumberAfterKeyword(str, 'init#');
@@ -248,17 +163,18 @@ onMounted(() => {
         let first_flag = false;
         let current_line_width = init;
 
-
         for (let i = 0; i < passes; i++) {
             let current_line_width2 = current_line_width;
             if (band === 0 && first_flag) {
-                if (progressionType === "plus") {
+                if (progressionType === "PLUS") {
                     current_line_width = init + plus * i;
-                } else if (progressionType === 'minus') {
+                } else if (progressionType === 'MINUS') {
                     current_line_width = init + minus * i;
                 }
             }
-            generateLineObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width);
+            if (itemType === 'cross') generateCrossObject(xCoord, yCoord, colours[Number(color1) - 1], colours[Number(color2) - 1], -45, current_line_width)
+            else if (itemType === 'threadDown') generateThreadObject(xCoord, yCoord, colours[Number(color1) - 1], -45, current_line_width, 'threadDown')
+            else if (itemType === 'threadUp') generateThreadObject(xCoord, yCoord, colours[Number(color2) - 1], -45, current_line_width, 'threadUp')
             console.log(oStore.objects[i])
             if (direction.toUpperCase() === 'LEFT') {
                 yCoord = yCoord - current_line_width * Math.SQRT2;
@@ -277,28 +193,9 @@ onMounted(() => {
             currentWidth = currentWidth;
             first_flag = true;
         }
-
-        app.renderer.render(app.stage);
+        appCanvas.renderer.render(appCanvas.stage);
     }
 
-    function addRunEventListener() {
-        document.getElementById('menuRun').addEventListener('click', () => {
-            clearStage();
-            sliderValue.value = [0]
-            oStore.$patch((state) => {
-                state.objects = []
-            })
-
-            let code = document.getElementById('code-editor').value;
-            let textBoxLines = code.split('\n')
-
-            textBoxLines.forEach((line) => {
-                parseCross(line, 3)
-                app.renderer.render(app.stage);
-            })
-
-        });
-    }
     window.addEventListener('keydown', function (event) {
         if (event.altKey && event.key === 'Enter') {
             console.log('Alt + Enter pressed!');
@@ -308,18 +205,17 @@ onMounted(() => {
                 state.objects = []
             })
 
-            let code = document.querySelector('.ace_text-input').value;
+            //let code = document.querySelector('.ace_text-input').value;
+            let code = eStore.editorValue
             let textBoxLines = code.split('\n')
 
             textBoxLines.forEach((line) => {
-                console.log('asdf')
-                parseCross(line, 3)
+                determinePath(line, app)
             })
 
         }
 
     })
-    //addRunEventListener();
 
     app.renderer.render(app.stage);
 
@@ -335,35 +231,20 @@ onMounted(() => {
             VisualWrap [TEST]
         </h1>
     </header>
-    <div class="grid h-[90vh] w-full pl-[53px]">
+    <div class="grid h-[90vh] w-full pl-[110px]">
         <LeftBar />
         <div class="flex flex-col justify-center items-center">
             <!-- here -->
-            <main class="border-l gap-4 overflow-auto w-full flex md:grid-cols-1 lg:grid-cols-1 justify-center">
-                <!--<ResizablePanel :default-size="15">
-                        <div class="relative hidden flex-col items-start gap-8 md:flex ms-2 pe-1">
-                            <form class="grid w-full items-start gap-6">
-                                <fieldset class="grid gap-6 hover:shadow-sm border mt-1 p-4">
-                                    <legend class="text-md font-untitledSans text-s font-bold">
-                                        Script Editor
-                                    </legend>
-                                    <div class="gap-3">
-                                        <Label for="content"></Label>
-                                        <Textarea id="code-editor" placeholder=""
-                                            class="min-h-[9.5rem] font-untitledSans" />
-                                        <Button size="sm" variant="outline" id="menuRun"
-                                            @click.prevent="handleButtonClick" class="mt-4 font-untitledSans">
-                                            Generate</Button>
-                                    </div>
-                                </fieldset>
-                            </form>
-                        </div>
-                    </ResizablePanel>-->
+            <main class="border-l gap-4 o w-full flex md:grid-cols-1 lg:grid-cols-1 justify-center">
                 <div class="relative flex h-full min-h-[20vh] items-center flex-col p-4 lg:col-span-2"
                     id="mainContainer">
-                    <div class="flex gap-1 mb-4 mt-6 w-1/2">
-                        <Slider @update:modelValue="handleSliderChange" v-model="sliderValue" :default-value="[1]"
-                            :max="sliderMaxValue" :step="1" />
+                    <div class="flex gap-1 mb-4 mt-6">
+                        <!--<Slider @update:modelValue="handleSliderChange" v-model="sliderValue" :default-value="[1]"
+                            :max="sliderMaxValue" :step="1" />-->
+                        <div class="slidecontainer">
+                            <input @input="handleSliderChange($event)" v-model="sliderValue" type="range" min="1"
+                                :max="sliderMaxValue" class="slider" id="myRange">
+                        </div>
                     </div>
                     <div class="relative flex gap-1 mb-6 mt-6">
                         <div v-for="c, i in colours" class="columns-1">
@@ -372,25 +253,13 @@ onMounted(() => {
                             </div>
                             <div class="text-center font-untitledSans">{{ i + 1 }}</div>
                         </div>
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger as-child>
-                                    <Button variant="ghost" size="icon" class="rounded-lg" aria-label="Add Spool">
-                                        <PlusCircleIcon class=""></PlusCircleIcon>
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent class="font-untitledSans" side="right" :side-offset="5">
-                                    Add Spool
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
                     </div>
                     <div class="flex gap-5">
                         <div id="canvasContainer" class="canvas-container"></div>
                         <div id="canvasContainer2" class="canvas-container"></div>
                     </div>
-                    <div id="y-coordinate">asdf</div>
-                    <div id="x-coordinate">asdf</div>
+                    <div id="y-coordinate">0</div>
+                    <div id="x-coordinate">0</div>
                     <div class="font-untitledSans">Cross X 100 Y 100 Spool_Up 4 Spool_Dn 1 Right plus 0 init# 20
                         passes 3 % 1.1
                         !descriptive comment</div>
@@ -420,5 +289,9 @@ onMounted(() => {
 
 #mainContainer {
     height: calc(100vh - 57px - 30px);
+}
+
+#myRange {
+    width: 20vw
 }
 </style>
