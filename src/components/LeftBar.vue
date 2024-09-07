@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { editorStore } from './stores/editor-store'
+import { editorStore } from '/src/stores/editor-store'
 
 const eStore = editorStore()
 

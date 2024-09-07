@@ -1,17 +1,15 @@
-// @ts-nocheck
-
 <script setup>
 import { coloursStore } from '/src/stores/colours-store'
 import { onMounted, ref, toRaw, computed } from 'vue'
-import { objectStore } from './stores/objects-store'
-import Line from './classes/Line'
-import LineContainer from './classes/LineContainer'
-import Canvas from './classes/Canvas'
-import LeftBar from './LeftBar.vue'
+import { objectStore } from '/src/stores/objects-store'
+import Line from '/src/classes/Line'
+import LineContainer from '/src/classes/LineContainer'
+import Canvas from '/src/classes/Canvas'
+import LeftBar from '/src/components/LeftBar.vue'
 import anime from 'animejs/lib/anime.es.js';
-import ScriptEditor from './ScriptEditor.vue'
-import { getFirstWord, getNumberAfterKeyword, getWordAfterKeyword, findFirstWordAfterFourthNumber } from './helpers.ts'
-import { editorStore } from './stores/editor-store'
+import ScriptEditor from '/src/components/ScriptEditor.vue'
+import { getFirstWord, getNumberAfterKeyword, getWordAfterKeyword, findFirstWordAfterFourthNumber } from './utils/helpers.ts'
+import { editorStore } from '/src/stores/editor-store'
 
 /*import {
   Popover,

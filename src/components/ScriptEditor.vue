@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, nextTick } from 'vue';
 import { VAceEditor } from 'vue3-ace-editor';
-import { editorStore } from './stores/editor-store'
+import { editorStore } from '../stores/editor-store'
 import { ref, watch } from 'vue';
 import 'ace-builds/src-noconflict/ace';
 import 'ace-builds/src-noconflict/mode-html';

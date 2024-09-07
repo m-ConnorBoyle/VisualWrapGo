@@ -1,6 +1,6 @@
 // src/tests/helpers.test.js
 import { describe, it, expect } from 'vitest';
-import { getWordAfterKeyword } from '../helpers.ts';
+import { getWordAfterKeyword } from '../utils/helpers.ts';
 
 describe('getWordAfterKeyword', () => {
   it('should return the word after the given keyword', () => {
