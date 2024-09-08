@@ -11,7 +11,7 @@ export const objectStore = defineStore("objects", {
     },
   }),
   actions: {
-    addObject(obj) {
+    addObject(obj: any) {
       this.objects.push(obj);
     },
   },

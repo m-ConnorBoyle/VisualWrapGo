@@ -1,17 +1,16 @@
-<script setup>
-import { ref } from "vue";
-import { editorStore } from "/src/stores/editor-store";
+<script setup lang='ts'>
+//import { editorStore } from "@/stores/editor-store";
 
-const eStore = editorStore();
+//const eStore = editorStore();
 
-const toggleEditor = () => {
+/*const toggleEditor = () => {
   if (eStore.isEditorVisible) {
     eStore.$patch({ isEditorVisible: false });
   } else {
     eStore.$patch({ isEditorVisible: true });
   }
   //editorStore.$patch({ isEditorVisible: !eStore.isEditorVisible })
-};
+};*/
 </script>
 
 <template>

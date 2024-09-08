@@ -1,5 +1,5 @@
 import Line from "./Line.js";
-import { objectStore } from "../stores/objects-store.js";
+import { objectStore } from "../stores/objects-store.ts";
 
 class LineContainer {
   constructor(canvasWidth, app) {

@@ -1,4 +1,3 @@
-import { coloursStore } from "/src/stores/colours-store";
 
 function getNumberAfterKeyword(sentence: string, keyword: string) {
   const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
@@ -7,11 +6,11 @@ function getNumberAfterKeyword(sentence: string, keyword: string) {
   return Number(matches ? matches[1] : null);
 }
 
-function getWordAfterKeyword(sentence: string, keyword: string) {
+function getWordAfterKeyword(sentence: string, keyword: string): string {
   const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
   const regex = new RegExp(`${escapedKeyword}[^\\s]*\\s+(\\S+)`, "i");
   const matches = sentence.match(regex);
-  return matches ? matches[1] : null;
+  return matches ? matches[1] : "";
 }
 
 function findFirstWordAfterFourthNumber(sentence: string) {
@@ -28,10 +27,7 @@ function getFirstWord(str: string) {
 
 function parseCross(str: string, appCanvas: any) {
   let xCoord = getNumberAfterKeyword(str, "x") * 1;
-  const colours = coloursStore();
   let yCoord = getNumberAfterKeyword(str, "y") * 1;
-  let color1 = getWordAfterKeyword(str, "Spool");
-  let color2 = getWordAfterKeyword(str, "Spool_Dn");
   let band = getNumberAfterKeyword(str, "Band") * 1;
   let minus = getNumberAfterKeyword(str, "minus") * 1;
   let plus = getNumberAfterKeyword(str, "plus") * 1;

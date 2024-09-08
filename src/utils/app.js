@@ -1,5 +1,5 @@
 import { coloursStore } from "./stores/colours-store";
-import { pinia } from "../main.js";
+import { pinia } from "../main.ts";
 
 //const pinia = createPinia()
 //const cStore = coloursStore(pinia)

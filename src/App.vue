@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { coloursStore } from "/src/stores/colours-store";
 import { onMounted, ref, toRaw, computed } from "vue";
 import { objectStore } from "/src/stores/objects-store";
@@ -15,13 +15,6 @@ import {
   findFirstWordAfterFourthNumber,
 } from "./utils/helpers.ts";
 import { editorStore } from "/src/stores/editor-store";
-
-/*import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { Input } from '@/components/ui/input'*/
 
 const cStore = coloursStore();
 const oStore = objectStore();
