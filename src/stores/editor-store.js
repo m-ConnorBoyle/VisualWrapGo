@@ -1,8 +1,8 @@
-import { defineStore } from "pinia"
+import { defineStore } from "pinia";
 
-export const editorStore = defineStore('editor', {
-    state: () => ({
-        isEditorVisible: true,
-        editorValue: '',
-    }),
-})
+export const editorStore = defineStore("editor", {
+  state: () => ({
+    isEditorVisible: true,
+    editorValue: "",
+  }),
+});
