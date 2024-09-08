@@ -1,4 +1,3 @@
-import anime from "animejs/lib/anime.es.js";
 import { objectStore } from "../stores/objects-store";
 class Canvas {
   constructor(parentId, width, backgroundColor) {

@@ -342,7 +342,6 @@ onMounted(() => {
           yCoord = yCoord + current_line_width * Math.SQRT2;
         }
       }
-      currentWidth = currentWidth;
       first_flag = true;
     }
     appCanvas.renderer.render(appCanvas.stage);
@@ -357,7 +356,6 @@ onMounted(() => {
         state.objects = [];
       });
 
-      //let code = document.querySelector('.ace_text-input').value;
       let code = eStore.editorValue;
       let textBoxLines = code.split("\n");
 
@@ -382,7 +380,6 @@ onMounted(() => {
   <div class="grid h-[90vh] w-full pl-[110px]">
     <LeftBar />
     <div class="flex flex-col justify-center items-center">
-      <!-- here -->
       <main
         class="border-l gap-4 o w-full flex md:grid-cols-1 lg:grid-cols-1 justify-center"
       >
@@ -391,8 +388,6 @@ onMounted(() => {
           id="mainContainer"
         >
           <div class="flex gap-1 mb-4 mt-6">
-            <!--<Slider @update:modelValue="handleSliderChange" v-model="sliderValue" :default-value="[1]"
-                            :max="sliderMaxValue" :step="1" />-->
             <div class="slidecontainer">
               <input
                 @input="handleSliderChange($event)"
