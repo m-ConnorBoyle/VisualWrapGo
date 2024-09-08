@@ -10,21 +10,25 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
+    "allowJs": true,
 
-    /* Linting */
-    //"strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/main.js"],
-  "exclude": ["src/App.vue"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/main.ts",
+    "src/**/*.js",
+    "src/classes/LineContainer.js",
+    "src/classes/LineContainer.js"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

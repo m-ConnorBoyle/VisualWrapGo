@@ -11,6 +11,7 @@ export const objectStore = defineStore("objects", {
     },
   }),
   actions: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     addObject(obj: any) {
       this.objects.push(obj);
     },

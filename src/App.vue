@@ -53,8 +53,6 @@ onMounted(() => {
   let c1 = new Canvas("canvasContainer", canvasWidth, backgroundColour);
   app = c1.newApp();
   const canvasContainer = c1.canvasContainer;
-  let globalZIndex = 0;
-  let linesArr = [];
 
   canvasContainer.appendChild(app.view);
 
