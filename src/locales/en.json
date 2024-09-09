@@ -1,0 +1,12 @@
+{
+    "message":  {
+        "components": {
+            "LeftBar": {
+                "SCRIPT_EDITOR": "Script Editor",
+                "SETTINGS": "Settings",
+                "HELP"  : "Help",
+                "ACCOUNT" : "Account"
+            }
+        }
+    }
+}

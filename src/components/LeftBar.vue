@@ -11,15 +11,19 @@
   }
   //editorStore.$patch({ isEditorVisible: !eStore.isEditorVisible })
 };*/
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 </script>
 
 <template>
   <div class="inset-y fixed left-0 flex max-h-[80vh] pb-[40px] flex-col">
     <nav class="grid gap-1 w-28 p-2">
-      <div clas="font-untitledSans animate-pulse">Script Editor</div>
-      <div clas="font-untitledSans">Settings</div>
-      <div clas="font-untitledSans">Help</div>
-      <div clas="font-untitledSans">Account</div>
+      <div class="font-untitledSans"> {{ t('message.components.LeftBar.SCRIPT_EDITOR') }}</div>
+      <div class="font-untitledSans"> {{ t('message.components.LeftBar.SETTINGS') }}</div>
+      <div class="font-untitledSans"> {{ t('message.components.LeftBar.HELP') }}</div>
+      <div class="font-untitledSans"> {{ t('message.components.LeftBar.ACCOUNT') }}</div>
     </nav>
   </div>
 </template>
